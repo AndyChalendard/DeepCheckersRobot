@@ -23,7 +23,7 @@ void GeoPlane::setCoord(float l, float h) {
 }
 
 void GeoPlane::getAngle(float & teta1, float & teta2) {
-
+    // TODO
 }
 
 void GeoPlane::getCoord(float & l, float & h) {
