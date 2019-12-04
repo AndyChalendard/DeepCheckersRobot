@@ -60,7 +60,7 @@ class Board:
         Return the value of the square x,y in the global board
         """
         i,j = self._convertXYtoIJ(x,y)
-        return Pawns.display(self._board[i][j])
+        return self._board[i][j]
     
     def setSquare(self,x,y,idPawn):
         '''
