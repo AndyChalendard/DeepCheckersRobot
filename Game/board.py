@@ -40,14 +40,20 @@ class Board:
         """
         Display the matrix _board in the correct form of play
         """
+        line = '   '
+        for i in range(self.SIZE_X):
+            line = line + str(i) + '   '
+        print(line)
+        line = str(0)
         for i in range (self.SIZE_Y):
-            line = '|'
+            line = line + '|'
             for j in range (self.SIZE_X//2):
                 if j%2 == i%2:
                     line = line + Pawns.display(self._board[i][j]) + '|'
                 else:
                     line = line +'   '+ '|' + Pawns.display(self._board[i][j]) + '|' +'   '+ '|'
             print (line)
+            line = str(i+1)
 
     def getSquare(self,x,y):
         """
