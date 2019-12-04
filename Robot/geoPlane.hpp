@@ -22,6 +22,8 @@ class GeoPlane {
     private:
         static float calcCoordOfL(float teta1, float teta2);
         static float calcCoordOfH(float teta1, float teta2);
+
+        bool searchTeta1(bool withL, float & xStart, float & xEnd, float yTarget, float teta2, float & accuracy);
 };
 
 
