@@ -24,31 +24,35 @@ void GeoPlane::setCoord(float l, float h) {
     this->h = h;
 }
 
-#include <iostream>
+// return true if the sign is different
+bool compareSign(float A, float B) {
+    if (A >= 0) {
+        return (B<0);
+    }else{
+        return (B>=0);
+    }
+}
 
 // Valeur donnée en radian
 // retourne true si la valeur a été trouvé, false si plusieurs valeurs sont dans le nouvelle intervalle
 bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarget, float teta2, float & accuracy) {
     float yTmp, xTmp;
     float errPrec, err;
-    bool errDecrease = false;
     bool xStartIsTaken = false;
     bool xEndIsTaken = false;
+    float tmpXStart = xStart;
     float tmpXEnd = xEnd;
 
-    xTmp = xStart - accuracy;
+    xTmp = tmpXStart;
     if (withL) {
-        yTmp = calcCoordOfL(xTmp, teta2);
+        yTmp = calcCoordOfL(tmpXStart-accuracy, teta2);
     }else{
-        yTmp = calcCoordOfH(xTmp, teta2);
+        yTmp = calcCoordOfH(tmpXStart-accuracy, teta2);
     }
 
-    errPrec = abs(yTmp - yTarget);
-    xTmp += accuracy;
+    errPrec = yTmp - yTarget;
 
-    while (xTmp < tmpXEnd) {
-        //std::cout << "x: " << xStart*180/3.14159 << " " << xEnd*180/3.14159 << " " << xTmp*180/3.14159 << std::endl;
-        //for (int i = 0; i < 99999999; i++);
+    while (xTmp <= (xEnd+accuracy) && xEndIsTaken == false) {
 
         if (withL) {
             yTmp = calcCoordOfL(xTmp, teta2);
@@ -56,54 +60,49 @@ bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarg
             yTmp = calcCoordOfH(xTmp, teta2);
         }
 
-        err = abs(yTmp - yTarget);
+        err = yTmp - yTarget;
 
         if (xStartIsTaken == false) {
-            // Si l'erreur diminue
-            if (err < errPrec) {
-                xStart = xTmp-accuracy/2;
-                errDecrease = true;
+            if (compareSign(err, errPrec) == true) {
+                xStartIsTaken = true;
+                tmpXEnd = xTmp;
             }else{
-                if (errDecrease == true) {
-                    xStartIsTaken = true;
-                    xEnd = xTmp;
-                }
-                errDecrease = false;
+                tmpXStart = xTmp;
             }
-        // Si on a toujours pas trouvé la fin, mais on a trouvé le début
+        // Si on a toujours pas sûr de la fin, mais on a trouvé le début
         }else if (xEndIsTaken == false) {
-            // Si l'erreur diminue
-            if (err < errPrec) {
-                xEnd = xTmp + accuracy/2;
-                errDecrease = true;
-            }else{
-                if (errDecrease == true) {
-                    xEndIsTaken = true;
-                    tmpXEnd = xEnd;
-                }
-                errDecrease = false;
+            if (compareSign(err, errPrec) == true) {
+                tmpXEnd = xTmp;
+                xEndIsTaken = true;
             }
         }
         
         errPrec = err;
         xTmp += accuracy;
     }
+    
+    // Si rien auncun croisement n'a été trouvé sur cette interval
+    if (tmpXStart > tmpXEnd) {
+        return false;
+    }
+
+    // Si l'interval s'est refermé
+    if (tmpXStart > xStart) xStart = tmpXStart;
+    if (tmpXEnd < xEnd) xEnd = tmpXEnd;
 
     // Si on a trouvé un nouveau interval et pas une seule valeur
-    if ( (xEnd - xStart) > 3*accuracy ) {
-        //std::cout << "Intervalle.." << std::endl;
+    if ( (xEnd - xStart) > 2.1f*accuracy ) {
         return false;
     }
 
     if (withL) {
-        yTmp = calcCoordOfL(xStart, teta2);
+        yTmp = calcCoordOfL((xStart+xEnd)/2, teta2);
     }else{
-        yTmp = calcCoordOfH(xStart, teta2);
+        yTmp = calcCoordOfH((xStart+xEnd)/2, teta2);
     }
-    if (abs(yTmp - yTarget) > POSITION_ACCURACY) {
-        //std::cout << "Precision: " << abs(yTmp - yTarget) << "\nAugmentation de la demande de précision" << std::endl;
-        accuracy /= 2;
-        return false;
+    if (abs(yTmp - yTarget) >= POSITION_ACCURACY) {
+        accuracy /= 10;
+        return searchTeta1(withL, xStart, xEnd, yTarget, teta2, accuracy);
     }
 
     return true;
@@ -133,16 +132,12 @@ void GeoPlane::getAngle(float & teta1, float & teta2) {
         teta1Max = 95*3.14159/180;
         tmpAccurate = 2*3.14159/180;
         while (teta1IsFound == false) {
-            //std::cout << "Search with l et " << this->teta2*180/3.14159 << "\n";
             teta1IsFound = searchTeta1(true, teta1Min, teta1Max, this->l, this->teta2, tmpAccurate);
-            if (teta1IsFound == false) {
-                //std::cout << "Search with h et " << this->teta2*180/3.14519 << "\n";
-                teta1IsFound = searchTeta1(false, teta1Min, teta1Max, this->h, this->teta2, tmpAccurate);
-            }
+            teta1IsFound |= searchTeta1(false, teta1Min, teta1Max, this->h, this->teta2, tmpAccurate);
         }
         
         this->teta2 = this->teta2;
-        this->teta1 = teta1Min;
+        this->teta1 = (teta1Min + teta1Max) / 2;
 
         tetaIsCalc = true;
     }
