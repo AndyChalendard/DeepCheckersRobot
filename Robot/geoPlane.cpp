@@ -133,7 +133,6 @@ void GeoPlane::getAngle(float & theta1, float & theta2) {
         theta1Min = -25*3.14159/180;
         theta1Max = 95*3.14159/180;
         tmpAccurate = 2*3.14159/180;
-        searchTheta1(false, theta1Min, theta1Max, this->h, this->theta2, tmpAccurate);
         while (theta1IsFound == false) {
             theta1IsFound = searchTheta1(true, theta1Min, theta1Max, this->l, this->theta2, tmpAccurate);
             theta1IsFound |= searchTheta1(false, theta1Min, theta1Max, this->h, this->theta2, tmpAccurate);
