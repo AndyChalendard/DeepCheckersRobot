@@ -3,27 +3,32 @@
 
 class GeoPlane {
     private:
-        bool tetaIsCalc;
-        float teta1;
-        float teta2;
+        bool thetaIsCalc;
+        float theta1;
+        float theta2;
         bool coordIsCalc;
         float l;
         float h;
 
     public:
-        GeoPlane() : tetaIsCalc(false), teta1(0), teta2(0), coordIsCalc(0), l(0), h(0) {}
+        // GeoPlane constructor
+        GeoPlane() : thetaIsCalc(false), theta1(0), theta2(0), coordIsCalc(0), l(0), h(0) {}
 
-        void setAngle(float teta1, float teta2);
+        // Setters
+        void setAngle(float theta1, float theta2);
         void setCoord(float l, float h);
 
-        void getAngle(float & teta1, float & teta2);
-        void getCoord(float & l, float & h);
+        // Getters
+        void getAngle(float & theta1, float & theta2); // We know the position
+        void getCoord(float & l, float & h); // We know the angle
 
     private:
-        static float calcCoordOfL(float teta1, float teta2);
-        static float calcCoordOfH(float teta1, float teta2);
+        // Plane position calculation
+        static float calcCoordOfL(float theta1, float theta2);
+        static float calcCoordOfH(float theta1, float theta2);
 
-        bool searchTeta1(bool withL, float & xStart, float & xEnd, float yTarget, float teta2, float & accuracy);
+        // Theta1 value searching
+        bool searchTheta1(bool withL, float & xStart, float & xEnd, float yTarget, float theta2, float & accuracy);
 };
 
 

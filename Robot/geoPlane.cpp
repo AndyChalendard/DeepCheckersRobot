@@ -1,30 +1,30 @@
 #include "geoPlane.hpp"
 #include <math.h>
 
-#define VAL_A 170   // Hauteur pilier
-#define VAL_B 160   // Longueur arrière-bras
-#define VAL_C 285   // Longueur avant-bras
-#define VAL_D 32// TODO 34    // Hauteur main
+#define VAL_A 170   // Pillar Height
+#define VAL_B 160   // Back Arm Length
+#define VAL_C 285   // Front Arm Length
+#define VAL_D 34    // Hand Height
 
-#define POSITION_ACCURACY 0.5f    // Précision pour la valeur de l
+#define POSITION_ACCURACY 0.5f    // l value accurancy
 
-void GeoPlane::setAngle(float teta1, float teta2) {
-    tetaIsCalc = true;
+void GeoPlane::setAngle(float theta1, float theta2) {
+    thetaIsCalc = true;
     coordIsCalc = false;
 
-    this->teta1 = teta1*3.14159/180;
-    this->teta2 = teta2*3.14159/180;
+    this->theta1 = theta1*3.14159/180;
+    this->theta2 = theta2*3.14159/180;
 }
 
 void GeoPlane::setCoord(float l, float h) {
-    tetaIsCalc = false;
+    thetaIsCalc = false;
     coordIsCalc = true;
 
     this->l = l;
     this->h = h;
 }
 
-// return true if the sign is different
+// Return true if the sign is different
 bool compareSign(float A, float B) {
     if (A >= 0) {
         return (B<0);
@@ -33,9 +33,10 @@ bool compareSign(float A, float B) {
     }
 }
 
-// Valeur donnée en radian
-// retourne true si la valeur a été trouvé, false si plusieurs valeurs sont dans le nouvelle intervalle
-bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarget, float teta2, float & accuracy) {
+// X value in radian
+// return true if the final value is found
+// return false if the final value is not found (interval should be reduced)
+bool GeoPlane::searchTheta1(bool withL, float & xStart, float & xEnd, float yTarget, float theta2, float & accuracy) {
     float yTmp, xTmp;
     float errPrec, err;
     bool xStartIsTaken = false;
@@ -45,9 +46,9 @@ bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarg
 
     xTmp = tmpXStart;
     if (withL) {
-        yTmp = calcCoordOfL(tmpXStart-accuracy, teta2);
+        yTmp = calcCoordOfL(tmpXStart-accuracy, theta2);
     }else{
-        yTmp = calcCoordOfH(tmpXStart-accuracy, teta2);
+        yTmp = calcCoordOfH(tmpXStart-accuracy, theta2);
     }
 
     errPrec = yTmp - yTarget;
@@ -55,9 +56,9 @@ bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarg
     while (xTmp <= (xEnd+accuracy) && xEndIsTaken == false) {
 
         if (withL) {
-            yTmp = calcCoordOfL(xTmp, teta2);
+            yTmp = calcCoordOfL(xTmp, theta2);
         }else{
-            yTmp = calcCoordOfH(xTmp, teta2);
+            yTmp = calcCoordOfH(xTmp, theta2);
         }
 
         err = yTmp - yTarget;
@@ -69,7 +70,7 @@ bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarg
             }else{
                 tmpXStart = xTmp;
             }
-        // Si on a toujours pas sûr de la fin, mais on a trouvé le début
+        // If we have found the first value, but not the second
         }else if (xEndIsTaken == false) {
             if (compareSign(err, errPrec) == true) {
                 tmpXEnd = xTmp;
@@ -81,42 +82,43 @@ bool GeoPlane::searchTeta1(bool withL, float & xStart, float & xEnd, float yTarg
         xTmp += accuracy;
     }
     
-    // Si rien auncun croisement n'a été trouvé sur cette interval
+    // If no solution is found
     if (tmpXStart > tmpXEnd) {
         return false;
     }
 
-    // Si l'interval s'est refermé
+    // We do the intersection of the two interval (the new, and the one initially requested)
     if (tmpXStart > xStart) xStart = tmpXStart;
     if (tmpXEnd < xEnd) xEnd = tmpXEnd;
 
-    // Si on a trouvé un nouveau interval et pas une seule valeur
+    // If we don't have one solution
     if ( (xEnd - xStart) > 2.1f*accuracy ) {
         return false;
     }
 
     if (withL) {
-        yTmp = calcCoordOfL((xStart+xEnd)/2, teta2);
+        yTmp = calcCoordOfL((xStart+xEnd)/2, theta2);
     }else{
-        yTmp = calcCoordOfH((xStart+xEnd)/2, teta2);
+        yTmp = calcCoordOfH((xStart+xEnd)/2, theta2);
     }
+    // if the solution is not enough accurate
     if (abs(yTmp - yTarget) >= POSITION_ACCURACY) {
         accuracy /= 10;
-        return searchTeta1(withL, xStart, xEnd, yTarget, teta2, accuracy);
+        return searchTheta1(withL, xStart, xEnd, yTarget, theta2, accuracy);
     }
 
     return true;
 }
 
-void GeoPlane::getAngle(float & teta1, float & teta2) {
+void GeoPlane::getAngle(float & theta1, float & theta2) {
     float tmp, tmpAccurate;
-    float teta1Min, teta1Max;
+    float theta1Min, theta1Max;
 
-    bool teta1IsFound = false;
+    bool theta1IsFound = false;
 
-    // Si on ne connait pas les angles
-    if (tetaIsCalc == false) {
-        // On calcul teta2 grâce à la fermeture géométrique inverse
+    // If we do not know the angle
+    if (thetaIsCalc == false) {
+        // We figure out theta2 using the geometrical formula
         tmp = this->l * this->l;
         tmp += (this->h+VAL_D-VAL_A)*(this->h+VAL_D-VAL_A);
         tmp -= VAL_B*VAL_B+VAL_C*VAL_C;
@@ -125,32 +127,33 @@ void GeoPlane::getAngle(float & teta1, float & teta2) {
         if (tmp>1) tmp = 1;
         else if (tmp<-1) tmp=-1;
 
-        this->teta2 = -acos(tmp);
+        this->theta2 = -acos(tmp);
 
-        // On recherche teta1
-        teta1Min = -25*3.14159/180;
-        teta1Max = 95*3.14159/180;
+        // We search theta1
+        theta1Min = -25*3.14159/180;
+        theta1Max = 95*3.14159/180;
         tmpAccurate = 2*3.14159/180;
-        while (teta1IsFound == false) {
-            teta1IsFound = searchTeta1(true, teta1Min, teta1Max, this->l, this->teta2, tmpAccurate);
-            teta1IsFound |= searchTeta1(false, teta1Min, teta1Max, this->h, this->teta2, tmpAccurate);
+        searchTheta1(false, theta1Min, theta1Max, this->h, this->theta2, tmpAccurate);
+        while (theta1IsFound == false) {
+            theta1IsFound = searchTheta1(true, theta1Min, theta1Max, this->l, this->theta2, tmpAccurate);
+            theta1IsFound |= searchTheta1(false, theta1Min, theta1Max, this->h, this->theta2, tmpAccurate);
         }
         
-        this->teta2 = this->teta2;
-        this->teta1 = (teta1Min + teta1Max) / 2;
+        this->theta2 = this->theta2;
+        this->theta1 = (theta1Min + theta1Max) / 2;
 
-        tetaIsCalc = true;
+        thetaIsCalc = true;
     }
 
-    teta1 = this->teta1*180/3.14159;
-    teta2 = this->teta2*180/3.14159;
+    theta1 = this->theta1*180/3.14159;
+    theta2 = this->theta2*180/3.14159;
 }
 
 void GeoPlane::getCoord(float & l, float & h) {
-    // Si on ne connait pas les coordonées dans le repère
+    // If we do not know the position
     if (coordIsCalc == false) {
-        this->l = calcCoordOfL(teta1, teta2);
-        this->h = calcCoordOfH(teta1, teta2);
+        this->l = calcCoordOfL(theta1, theta2);
+        this->h = calcCoordOfH(theta1, theta2);
         coordIsCalc = true;
     }
 
@@ -158,12 +161,12 @@ void GeoPlane::getCoord(float & l, float & h) {
     h = this->h;
 }
 
-// Les paramètres des angles doivent être en radian
-float GeoPlane::calcCoordOfL(float teta1, float teta2) {
-    return VAL_B*cos(teta1) + VAL_C*cos(teta1 + teta2);
+// Angle params must be in radian
+float GeoPlane::calcCoordOfL(float theta1, float theta2) {
+    return VAL_B*cos(theta1) + VAL_C*cos(theta1 + theta2);
 }
 
-// Les paramètres des angles doivent être en radian
-float GeoPlane::calcCoordOfH(float teta1, float teta2) {
-    return VAL_A + VAL_B*sin(teta1) + VAL_C*sin(teta1+teta2) - VAL_D;
+// Angle params must be in radian
+float GeoPlane::calcCoordOfH(float theta1, float theta2) {
+    return VAL_A + VAL_B*sin(theta1) + VAL_C*sin(theta1+theta2) - VAL_D;
 }
