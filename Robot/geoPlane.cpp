@@ -1,5 +1,5 @@
 #include "geoPlane.hpp"
-#include <math.h>
+#include <cmath>
 
 #define VAL_A 170   // Pillar Height
 #define VAL_B 160   // Back Arm Length
@@ -24,7 +24,7 @@ void GeoPlane::setCoord(float l, float h) {
     if (h < -110) h = -110;
     else if (h > 110) h = 110;
 
-    if (h <= 20 && h>=-20) {
+    if (h <= 12 && h>=-12) {
         if (l > 417)    l = 417;
         if (l < 70)     l = 70;
     }else if (h <= 35 && h>=-35) {
@@ -157,7 +157,6 @@ void GeoPlane::getAngle(float & theta1, float & theta2) {
             searchTheta1(true, theta1Min, theta1Max, this->l, this->theta2, tmpAccurate);
         }
         
-        this->theta2 = this->theta2;
         this->theta1 = (theta1Min + theta1Max) / 2;
 
         thetaIsCalc = true;
