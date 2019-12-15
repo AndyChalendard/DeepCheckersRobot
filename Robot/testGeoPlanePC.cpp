@@ -9,8 +9,8 @@ int main(void) {
 
     // --------------Test de GeoPlane--------------
     GeoPlane g;
-    for (float i=-20; i < 90; i+=0.01) { // for (float i=-20; i < 90; i+=0.5) {
-        for (float j=-120; j < 0; j+=0.01) { // for (float j=-120; j < 0; j+=0.5) {
+    for (float i=-20; i < 90; i+=0.05) {
+        for (float j=-160; j < 0; j+=0.05) {
             std::cout << "_____________________________" << ++nb << "_____________________________" << std::endl;
             std::cout << i << ":" << j << std::endl;
             g.setAngle(i, j);

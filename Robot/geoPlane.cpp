@@ -20,6 +20,24 @@ void GeoPlane::setCoord(float l, float h) {
     thetaIsCalc = false;
     coordIsCalc = true;
 
+    // prevention of prohibited positions (we put the robot in the accessible area, but at the same height)
+    if (h < -110) h = -110;
+    else if (h > 110) h = 110;
+
+    if (h <= 20 && h>=-20) {
+        if (l > 417)    l = 417;
+        if (l < 70)     l = 70;
+    }else if (h <= 35 && h>=-35) {
+        if (l > 374)    l = 374;
+        if (l < 103)    l = 103;
+    }else if (h <= 65 && h>=-65) {
+        if (l > 312)    l = 312;
+        if (l < 153)    l = 153;
+    }else {
+        if (l > 254)    l = 254;
+        if (l < 203)    l = 203;
+    }
+
     this->l = l;
     this->h = h;
 }
@@ -133,9 +151,10 @@ void GeoPlane::getAngle(float & theta1, float & theta2) {
         theta1Min = -25*3.14159/180;
         theta1Max = 95*3.14159/180;
         tmpAccurate = 2*3.14159/180;
-        while (theta1IsFound == false) {
-            theta1IsFound = searchTheta1(true, theta1Min, theta1Max, this->l, this->theta2, tmpAccurate);
-            theta1IsFound |= searchTheta1(false, theta1Min, theta1Max, this->h, this->theta2, tmpAccurate);
+        theta1IsFound = searchTheta1(true, theta1Min, theta1Max, this->l, this->theta2, tmpAccurate);
+        theta1IsFound |= searchTheta1(false, theta1Min, theta1Max, this->h, this->theta2, tmpAccurate);
+        if (theta1IsFound == false) {
+            searchTheta1(true, theta1Min, theta1Max, this->l, this->theta2, tmpAccurate);
         }
         
         this->theta2 = this->theta2;
