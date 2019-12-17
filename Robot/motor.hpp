@@ -16,14 +16,6 @@ class Motor {
         } motorStateLow;
         unsigned int motorSleep;
 
-        /*enum class MotorState {
-            init,
-            paused,
-            acceleration,
-            constant,
-            deceleration
-        } motorState;*/
-
         int posCurrent;
         int posWanted;
 
