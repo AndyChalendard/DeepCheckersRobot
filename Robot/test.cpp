@@ -11,18 +11,23 @@ void testMotor(Serial & serial, Motor & motor) {
     serial.printf("Position 0 considéré atteinte\r\n");
 
     serial.printf("Request position 360\r\n");
-    motor.setPosition(360);
-    ThisThread::sleep_for(10000);
+    motor.setPositionWithDuration(360, 8.0f);
+    ThisThread::sleep_for(4000);
+    serial.printf("Position 180 considéré atteinte\r\n");
+    
+    serial.printf("Request position 360\r\n");
+    motor.setPositionWithDuration(360, 1.0f);
+    ThisThread::sleep_for(1000);
     serial.printf("Position 360 considéré atteinte\r\n");
 
     serial.printf("Request position -360\r\n");
-    motor.setPosition(-360);
-    ThisThread::sleep_for(20000);
+    motor.setPositionWithDuration(-360, 4);
+    ThisThread::sleep_for(4000);
     serial.printf("Position -360 considéré atteinte\r\n");
 
     serial.printf("Request position 0\r\n");
-    motor.setPosition(0);
-    ThisThread::sleep_for(10000);
+    motor.setPositionWithDuration(0, 4);
+    ThisThread::sleep_for(4000);
     serial.printf("Position 0 considéré atteinte\r\n");
     
     serial.printf("Fin du test du moteur...\r\n");

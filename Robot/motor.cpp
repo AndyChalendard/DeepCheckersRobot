@@ -51,12 +51,22 @@ void Motor::controllerLow() {
         default:
             motorStateLow = MotorStateLow::init;
     }
-        
-
-        
 }
 
-void Motor::setPosition(float position) {
+void Motor::setPositionStep(int positionStep, int speed) {
+    // define the speed
+    setSpeed(speed);
+
     // Degres to steps
-    this->posWanted = (int) position*stepResolution*200/360;
+    this->posWanted = positionStep;
+}
+
+void Motor::setPosition(float position, int speed) {
+    setPositionStep((int) position*stepResolution*200/360, speed);
+}
+
+void Motor::setPositionWithDuration(float position, float duration) {
+    int finalStep = (int) position*stepResolution*200/360;
+
+    setPositionStep(finalStep, (int) (abs(finalStep-posCurrent) / duration));
 }

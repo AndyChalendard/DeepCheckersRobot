@@ -46,6 +46,8 @@ class Motor {
         // Define the speed, the maximum speed is 5000
         void setSpeed(int speed) {if (speed <= 5000) motorTimeDelay = 10000/speed; else motorTimeDelay = 2;}
 
+        // Define the position in step and the speed in step/s
+        void setPositionStep(int positionStep, int speed);
     public:
 
         // Constructor
@@ -56,8 +58,9 @@ class Motor {
 
         // Setters
         // Define the motor position wanted
-        // Position is in degres
-        void setPosition(float position);
+        // Position is in degres, speed in steps per seconde, duration in seconde
+        void setPosition(float position, int speed = 16*25);
+        void setPositionWithDuration(float position, float duration);
 };
 
 #endif
