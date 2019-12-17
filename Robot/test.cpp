@@ -10,16 +10,15 @@ void testMotor(Serial & serial, Motor & motor) {
     ThisThread::sleep_for(2500);
     serial.printf("Position 0 considéré atteinte\r\n");
 
-
-    serial.printf("Request position 400\r\n");
-    motor.setPosition(400);
+    serial.printf("Request position 360\r\n");
+    motor.setPosition(360);
     ThisThread::sleep_for(10000);
-    serial.printf("Position 400 considéré atteinte\r\n");
+    serial.printf("Position 360 considéré atteinte\r\n");
 
-    serial.printf("Request position -400\r\n");
-    motor.setPosition(-400);
+    serial.printf("Request position -360\r\n");
+    motor.setPosition(-360);
     ThisThread::sleep_for(20000);
-    serial.printf("Position -400 considéré atteinte\r\n");
+    serial.printf("Position -360 considéré atteinte\r\n");
 
     serial.printf("Request position 0\r\n");
     motor.setPosition(0);

@@ -1,6 +1,6 @@
 #include "motor.hpp"
 
-Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep) {
+Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, unsigned char stepResolution) {
     outputDirection = &digitalOutDirection;
     outputStep = &digitalOutStep;
 
@@ -10,33 +10,53 @@ Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep) {
     posCurrent = 0;
     posWanted = 0;
 
-    speed = 200;
+    this->stepResolution = stepResolution;
 
-    isActivate = true;
+    setSpeed(200*16); // set the speed to 1 tr/sec
+
+    motorStateLow = MotorStateLow::init;
+
+    tickerController.attach_us(callback(controllerExe, this), 100);
 }
 
-void Motor::controller() {
-    while (isActivate) {
+void Motor::controllerLow() {
+    switch(motorStateLow){
+        case MotorStateLow::init:
+            motorSleep = 1;
+            motorStateLow = MotorStateLow::pause;
 
-        // We define the direction of the rotation
-        *outputDirection = (posCurrent < posWanted);
+        // break; for the timing we don't use break
+        case MotorStateLow::pause:
+            *outputStep = 0;
 
+            if (posCurrent != posWanted) {
+                motorSleep ++;
+                if (motorSleep >= motorTimeDelay) {
+                    // We define the direction of the rotation
+                    *outputDirection = (posCurrent < posWanted);
 
-        if (posCurrent != posWanted) {
+                    motorStateLow = MotorStateLow::increment;
+                }
+            }
+
+            break;
+        case MotorStateLow::increment:
+            // We increment or decrement the step
             *outputStep = 1;
-
             if (*outputDirection) posCurrent ++; else posCurrent--;
-        }
-        ThisThread::sleep_for(500/speed);
+            
+            motorStateLow = MotorStateLow::init;
 
-
-        *outputStep = 0;
-        ThisThread::sleep_for(500/speed);
+            break;
+        default:
+            motorStateLow = MotorStateLow::init;
     }
+        
+
+        
 }
 
-void Motor::setPosition(int position) {
-    this->posWanted = position;
-
-    threadController.start(callback(controllerExe, this));
+void Motor::setPosition(float position) {
+    // Degres to steps
+    this->posWanted = (int) position*stepResolution*200/360;
 }
