@@ -12,8 +12,6 @@ Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, unsi
 
     this->stepResolution = stepResolution;
 
-    setSpeed(200*16); // set the speed to 1 tr/sec
-
     motorStateLow = MotorStateLow::init;
 
     tickerController.attach_us(callback(controllerExe, this), 100);

@@ -20,20 +20,23 @@ void callBackBlink(DigitalOut *led) {
     }
 }
 
-DigitalOut MotorDir(PC_10);
-DigitalOut MotorStep(PC_12);
+DigitalOut motorDir(PC_10);
+DigitalOut motorStep(PC_12);
+
+Semaphore semaphoreSerialOrder(0);
 
 // Main
 int main() {
     threadBlinkLed.start(callback(callBackBlink, &led1));
 
-    //Motor motor(MotorDir, MotorStep);
+    Motor motor(motorDir, motorStep);
 
     serial.printf("Demarrage de la carte...\r\n");
 
-    SerialOrder serialOrder(serial);
+    SerialOrder serialOrder(serial, semaphoreSerialOrder);
     //testMotor(serial, motor);
     //testFermeture(serial);
+    testSerialOrder(serial, serialOrder);
 
     while(1) {
         sleep();

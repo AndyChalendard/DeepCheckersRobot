@@ -7,10 +7,14 @@
 
 #include "mbed.h"
 
-#include "motor.hpp"
-void testMotor(Serial & serial, Motor & motor);
 
-void testFermeture(Serial & serial);
+#include "serialOrder.hpp"
+void testSerialOrder(RawSerial & serial, SerialOrder & serialOrder);
+
+#include "motor.hpp"
+void testMotor(RawSerial & serial, Motor & motor);
+
+void testFermeture(RawSerial & serial);
 
 #endif // TEST_LIB
 #endif // __TEST_HPP__

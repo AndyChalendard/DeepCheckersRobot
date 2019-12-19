@@ -1,7 +1,9 @@
 #include "serialOrder.hpp"
 
-SerialOrder::SerialOrder(RawSerial & serial) {
+SerialOrder::SerialOrder(RawSerial & serial, Semaphore & sem) {
     this->serial = &serial;
+
+    requestPosition = RequestPosition(sem);
 
     receiveState = ReceiveState::init;
 
@@ -24,7 +26,22 @@ char SerialOrder::readReceive() {
 void SerialOrder::requestStore() {
     if (valueIsNegative) value *= -1;
 
-    serial->printf("Request: %s:%f stored !\n\r", commande, value);
+    if (strcmp(commande, "POS_X") == 0) {
+        requestPosition.setX(value);
+        serial->printf("Request: %s:%f stored !\n\r", commande, value);
+    }
+    if (strcmp(commande, "POS_Y") == 0) {
+        requestPosition.setY(value);
+        serial->printf("Request: %s:%f stored !\n\r", commande, value);
+    }
+    if (strcmp(commande, "POS_Z") == 0) {
+        requestPosition.setZ(value);
+        serial->printf("Request: %s:%f stored !\n\r", commande, value);
+    }
+    if (strcmp(commande, "POS_GO") == 0) {
+        requestPosition.ready();
+        serial->printf("Request: %s is launch !\n\r", commande);
+    }
 
     commandeNbChar = 0;
     receiveState = ReceiveState::header;

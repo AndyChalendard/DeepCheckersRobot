@@ -19,8 +19,7 @@ class Motor {
         int posCurrent;
         int posWanted;
 
-        unsigned int motorTimeDelay; // number of 100µs per step 
-        unsigned int speed; // Steps per seconde
+        unsigned int motorTimeDelay; // number of 100µs per step
 
         // Motor configuration
         DigitalOut * outputDirection;
@@ -36,7 +35,7 @@ class Motor {
         static void controllerExe(Motor * mot) {mot->controllerLow();}
 
         // Define the speed, the maximum speed is 5000
-        void setSpeed(int speed) {if (speed <= 5000) motorTimeDelay = 10000/speed; else motorTimeDelay = 2;}
+        void setSpeed(int speed) {if (speed < 5000) motorTimeDelay = 10000/speed; else motorTimeDelay = 2;}
 
         // Define the position in step and the speed in step/s
         void setPositionStep(int positionStep, int speed);
