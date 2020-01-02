@@ -1,60 +1,125 @@
-import board
-import player
+import board as bd
+import player as pl
+import numpy as np
 
 class Game:
     def __init__(self):
-        self._board = board.Board()
+        self._board = bd.Board()
     
     def getBoard(self):
         return self._board
 
-    def getAvailableMovement(self,square,player):
+
+    def checkSimplePawnsMovement(self,x,y,color,board,paths,currentPath = []):
+        '''
+            Movements obligatory if we jump a pawn
+            check if we have obligatories movement to do (if we must kill a pawn)
+        '''
+        if (color == pl.Player.RED): #get opponent pawns
+            pawnOpponent = [bd.Pawns.BLUE_KING, bd.Pawns.BLUE]
+        else:
+            pawnOpponent = [bd.Pawns.RED_KING, bd.Pawns.RED]
+
+        mouvementAvailable = False
+
+        for i in [-1,1]: #check all positions arround the square
+            for j in [-1,1]:
+                try: #if the square is in the board
+                    if (board.getSquare(x+i,y+j) in pawnOpponent):
+                        if (board.getSquare(x+i*2,y+j*2) == bd.Pawns.NULL):
+                            mouvementAvailable = True
+
+                            tmpBoard = board.copy()
+                            tmpBoard.setSquare(x+i,y+j, bd.Pawns.NULL)
+
+                            tmpPath = currentPath[:]
+                            tmpPath.append((x+i*2,y+j*2))
+
+                            self.checkSimplePawnsMovement(x+i*2, y+j*2, color, tmpBoard, paths, tmpPath)
+                except Exception:
+                    pass
+
+        if (mouvementAvailable==False) : #there are no pawns to jump with
+            if (len(currentPath) != 0) :
+                paths.append(currentPath)
+
+    def getAvailablePathMovement(self,square,player):
+        '''
+            Return a boolean oblogatory which determine if we have an obligatory movement to do 
+             a list of different square which if the steps to arrive in an available movement
+        '''
         x = square[0]
         y = square[1]
         color = self._board.getSquare(x,y)
-
-        available = []
-        if (color == 0) : #square empty
+        obligatory = True #we have an obligatory movement
+        paths = []
+        if (color == bd.Pawns.NULL) : #square empty
             raise Exception("No pawn in this square") 
         else :
-            if (player.getColor() == 0):
-                if (color != 1 and color !=2): #not using his pawn
+            if (player.getColor() == pl.Player.RED):
+                if (color == bd.Pawns.BLUE or color ==bd.Pawns.BLUE_KING): #not using his pawn
                     raise Exception("It is not your pawn !")
             else :
-                if (color != 3 and color !=4): #not using his pawn
+                if (color == bd.Pawns.RED or color == bd.Pawns.RED_KING): #not using his pawn
                     raise Exception("It is not your pawn !")
             
-            if (color == 2 or color == 4): #for simple pawn
-                if (color == 4): #at the top of the board
-                    if (y != 0 and x != self._board.SIZE_X-1 and self._board.getSquare(x+1,y+1) == 0):
-                        available.append((x+1,y+1))
-                    if (x!=0 and y != 0 and self._board.getSquare(x-1,y+1) == 0):
-                        available.append((x-1,y+1))
+            if (color == bd.Pawns.BLUE or color == bd.Pawns.RED): #for simple pawn
 
-                if (color == 2): #at the bottom
-                    if (x != self._board.SIZE_X-1 and y!= self._board.SIZE_Y -1 and self._board.getSquare(x+1,y-1) == 0):
-                        available.append((x+1,y-1))
-                    if (x!=0 and y!= self._board.SIZE_Y -1 and self._board.getSquare(x-1,y-1) == 0):
-                        available.append((x-1,y-1))
+                self.checkSimplePawnsMovement(x,y,player.getColor(),self._board,paths)
+
+                if (len(paths) == 0): #we have an obligatory movement
+                    obligatory = False
+                    if (player.getColor() == pl.Player.BLUE):
+                        j=1 #the simple pawn can only go ahead 
+                    else:
+                        j=-1#the simple pawn can only go ahead 
+                    
+                    for i in [-1,1]:
+                        try: #if the square wanted is in the board
+                            if (self._board.getSquare(x+i,y+j) == bd.Pawns.NULL):
+                                paths.append([(x+i,y+j)])
+                        except Exception:
+                            pass
+
             #else: #for kings TODO
 
-        return available
+        return obligatory,paths 
 
 if __name__ == "__main__":
     g=Game()
-    b = g.getBoard()
-    b.display()
+    g.getBoard().display()
     #print(b.getSquare(2,2))
 
-    p = player.Player(0,True) #red
-    #g.getAvailableMovement((0,2),p) #not your pawn
-    #g.getAvailableMovement((0,5),p) #square not valid
-    print(g.getAvailableMovement((0,6),p)) #nothing there is always a pawn in (1,5)
-    print(g.getAvailableMovement((1,5),p)) #works
-    print(g.getAvailableMovement((7,5),p)) #works
+    p = pl.Player(pl.Player.RED,True)
+    #g.getAvailablePathMovement((0,2),p) #not your pawn
+    #g.getAvailablePathMovement((0,5),p) #square not valid
+    #print(g.getAvailablePathMovement((0,6),p)) #nothing there is always a pawn in (1,5)
+    #print(g.getAvailablePathMovement((1,5),p))
+    #print(g.getAvailablePathMovement((7,5),p)) 
 
-    p = player.Player(1,True) #blue
-    print(g.getAvailableMovement((0,0),p)) #nothing there is always a pawn in (1,5)
-    print(g.getAvailableMovement((2,2),p)) #works
-    print(g.getAvailableMovement((0,2),p)) #works
+    p = pl.Player(pl.Player.BLUE,True) #blue
+    #print(g.getAvailablePathMovement((0,0),p)) #nothing there is always a pawn in (1,5)
+    #print(g.getAvailablePathMovement((2,2),p)) 
+    #print(g.getAvailablePathMovement((0,2),p)) 
+    g._board.setSquare(1,3,bd.Pawns.RED)
+    g._board.display()
+    print(g.getAvailablePathMovement((2,2),p)) 
+
+    g._board.setSquare(2,6,bd.Pawns.NULL)
+    g._board.display()
+    print(g.getAvailablePathMovement((2,2),p))
+
+    p = pl.Player(pl.Player.RED,True) #blue
+    g._board.reset()
+    g._board.setSquare(2,4,bd.Pawns.BLUE)
+    g._board.display()
+    print(g.getAvailablePathMovement((3,5),p)) 
+
+    g._board.setSquare(3,1,bd.Pawns.NULL)
+    g._board.display()
+    print(g.getAvailablePathMovement((3,5),p))
+
+
+
+
 

@@ -22,13 +22,18 @@ class Board:
     SIZE_X=8
     SIZE_Y=8
     def __init__(self): 
-        self._board=np.zeros((self.SIZE_Y,self.SIZE_X//2))
         self.reset()
+
+    def copy(self):
+        newBoard = Board()
+        newBoard._board = np.copy(self._board)
+        return newBoard
     
     def reset(self):
         """
         Reset the _board
         """
+        self._board=np.zeros((self.SIZE_Y,self.SIZE_X//2), dtype=int)
         for i in range (self.SIZE_Y):
             for j in range (self.SIZE_X//2):
                 if (i<(self.SIZE_Y -2)//2):
@@ -80,7 +85,7 @@ class Board:
             j = x//2 #lines
             i = y #rows
         else:
-            raise NameError('Square Not Valid')
+            raise Exception('Square Not Valid')
         return(i,j)
 
 if __name__ == "__main__": #tests
@@ -89,6 +94,9 @@ if __name__ == "__main__": #tests
     print(b._board)
     print(b._convertXYtoIJ(6,0))
     print(b._board[6][0])
-    #print(b.getSquare(5,0))
+    try:
+        print(b.getSquare(10,0))
+    except Exception as identifier:
+        print (identifier)
     b.setSquare(0,2,3)
     b.display()
