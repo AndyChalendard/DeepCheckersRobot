@@ -12,18 +12,16 @@ class Player:
 
     def getPawnWanted(self):
         if self.isHuman :
-            coord = raw_input("Enter the pawn you want move : x y\n").split()
+            coord = input("Enter the pawn you want move : x y\n").split()
             if (len(coord) > 2):
                 raise Exception("Enter only x y") 
             xPawn = int(coord[0])
             yPawn = int (coord[1])
         return xPawn, yPawn
 
-
-            
     def getMovementWanted(self):
         if self.isHuman :
-            coord = raw_input("Enter the coordonates of the movement : x y\n ").split()
+            coord = input("Enter the coordonates of the movement : x y\n ").split()
             if (len(coord) > 2):
                 raise Exception("Enter only x y") 
             xMov = int(coord[0])

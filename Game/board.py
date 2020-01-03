@@ -40,6 +40,13 @@ class Board:
                     self._board[i][j] = Pawns.BLUE
                 elif (i>=(self.SIZE_Y -2)/2 + 2):
                     self._board[i][j] = Pawns.RED
+    
+    def resetEmpty(self):
+        """
+        Reset the _board with no pawns
+        """
+        self._board=np.zeros((self.SIZE_Y,self.SIZE_X//2), dtype=int)
+
 
     def display(self):
         """
