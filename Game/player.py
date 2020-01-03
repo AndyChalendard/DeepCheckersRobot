@@ -8,9 +8,15 @@ class Player:
         self.isHuman = isHuman
 
     def getColor(self):
+        '''
+        Get the color of the player (RED or BLUE)
+        '''
         return self._color
 
     def getPawnWanted(self):
+        '''
+        Get the pawn that the player wants to play with
+        '''
         if self.isHuman :
             coord = input("Enter the pawn you want move : x y\n").split()
             if (len(coord) > 2):
@@ -20,6 +26,9 @@ class Player:
         return xPawn, yPawn
 
     def getMovementWanted(self):
+        """
+        Get the movement that the player wants to do
+        """
         if self.isHuman :
             coord = input("Enter the coordonates of the movement : x y\n ").split()
             if (len(coord) > 2):

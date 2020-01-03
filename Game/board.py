@@ -1,5 +1,10 @@
 import numpy as np
 
+class SquareNotValid(Exception):
+    pass
+class PawnsException(Exception):
+    pass
+
 class Pawns:
     NULL = 0
     RED_KING = 1
@@ -25,6 +30,9 @@ class Board:
         self.reset()
 
     def copy(self):
+        """
+        Copy constructor
+        """
         newBoard = Board()
         newBoard._board = np.copy(self._board)
         return newBoard
@@ -33,7 +41,7 @@ class Board:
         """
         Reset the _board
         """
-        self._board=np.zeros((self.SIZE_Y,self.SIZE_X//2), dtype=int)
+        self.resetEmpty()
         for i in range (self.SIZE_Y):
             for j in range (self.SIZE_X//2):
                 if (i<(self.SIZE_Y -2)//2):
@@ -92,7 +100,8 @@ class Board:
             j = x//2 #lines
             i = y #rows
         else:
-            raise Exception('Square Not Valid')
+            raise SquareNotValid("The case (" + str(x) +","+ str(y) + ") is not valid")
+            #raise Exception("toto")
         return(i,j)
 
 if __name__ == "__main__": #tests
@@ -103,7 +112,7 @@ if __name__ == "__main__": #tests
     print(b._board[6][0])
     try:
         print(b.getSquare(10,0))
-    except Exception as identifier:
+    except SquareNotValid as identifier:
         print (identifier)
     b.setSquare(0,2,3)
     b.display()
