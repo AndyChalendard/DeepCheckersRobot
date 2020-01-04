@@ -1,8 +1,9 @@
 #include "motor.hpp"
 
-Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, unsigned char stepResolution) {
+Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInHome, float homePosition, char diminution, unsigned char stepResolution) {
     outputDirection = &digitalOutDirection;
     outputStep = &digitalOutStep;
+    inputHome = &digitalInHome;
 
     *outputDirection = 0;
     *outputStep = 0;
@@ -11,6 +12,8 @@ Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, unsi
     posWanted = 0;
 
     this->stepResolution = stepResolution;
+    this->diminution = diminution;
+    this->homePosition = homePosition;
 
     motorStateLow = MotorStateLow::init;
 
@@ -60,11 +63,27 @@ void Motor::setPositionStep(int positionStep, int speed) {
 }
 
 void Motor::setPosition(float position, int speed) {
-    setPositionStep((int) position*stepResolution*200/360, speed);
+    setPositionStep((int) (position * ((float) this->diminution) * ((float) stepResolution) * ((float) 200/360)), speed);
 }
 
 void Motor::setPositionWithDuration(float position, float duration) {
-    int finalStep = (int) position*stepResolution*200/360;
+    int finalStep = (int) (position * ((float) this->diminution) * ((float) stepResolution) * ((float) 200/360));
 
     setPositionStep(finalStep, (int) (abs(finalStep-posCurrent) / duration));
+}
+
+void Motor::goHome() {
+    // We search the home interruptor
+    setPosition(360.0, 1000);
+
+    // We wait for the event
+    while (*inputHome == 1) {};
+
+    // We stop the rotation of the engine
+    posWanted = posCurrent;
+
+    // We setup the current position
+    posCurrent = (int) this->homePosition * stepResolution * this->diminution * 200/360;
+    
+    setPosition(0, 1400);
 }

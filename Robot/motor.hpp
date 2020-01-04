@@ -7,6 +7,7 @@ class Motor {
     private:
         // A4988 configuration
         unsigned char stepResolution;
+        char diminution;
 
         // Motor state
         enum class MotorStateLow {
@@ -24,6 +25,9 @@ class Motor {
         // Motor configuration
         DigitalOut * outputDirection;
         DigitalOut * outputStep;
+        DigitalIn  * inputHome;
+
+        float homePosition;
 
         // Ticker of state machine
         LowPowerTicker tickerController;
@@ -42,7 +46,7 @@ class Motor {
     public:
 
         // Constructor
-        Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, unsigned char stepResolution = 16);
+        Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInHome, float homePosition, char diminution, unsigned char stepResolution = 16);
 
         // Destructor
         ~Motor() {tickerController.detach();}
@@ -52,6 +56,9 @@ class Motor {
         // Position is in degres, speed in steps per seconde, duration in seconde
         void setPosition(float position, int speed = 16*25);
         void setPositionWithDuration(float position, float duration);
+
+        // Take home
+        void goHome();
 };
 
 #endif

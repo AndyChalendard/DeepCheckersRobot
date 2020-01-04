@@ -1,7 +1,7 @@
 #ifndef __TEST_HPP__
 #define __TEST_HPP__
 
-#define TEST_LIB
+//#define TEST_LIB
 
 #ifdef TEST_LIB
 

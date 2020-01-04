@@ -5,6 +5,8 @@
 
 #include "test.hpp"
 
+#define MOTOR_DIMINUTION 5
+
 RawSerial serial(USBTX, USBRX, 9600);
 
 Thread threadBlinkLed;
@@ -20,8 +22,10 @@ void callBackBlink(DigitalOut *led) {
     }
 }
 
-DigitalOut motorDir(PC_10);
-DigitalOut motorStep(PC_12);
+DigitalOut motorTheta2Dir(PC_10);
+DigitalOut motorTheta2Step(PC_12);
+
+DigitalIn  motorTheta3Home(PC_3);
 
 Semaphore semaphoreSerialOrder(0);
 
@@ -29,14 +33,19 @@ Semaphore semaphoreSerialOrder(0);
 int main() {
     threadBlinkLed.start(callback(callBackBlink, &led1));
 
-    Motor motor(motorDir, motorStep);
-
     serial.printf("Demarrage de la carte...\r\n");
 
+    serial.printf("Initialisation des variables...\r\n");
+    // Moto theta3 -185
+    Motor motorTheta2(motorTheta2Dir, motorTheta2Step, motorTheta3Home, 90, MOTOR_DIMINUTION);
+
+
+    serial.printf("Initialisation des moteurs...\r\n");
+    motorTheta2.goHome();
+
     SerialOrder serialOrder(serial, semaphoreSerialOrder);
-    //testMotor(serial, motor);
-    //testFermeture(serial);
-    testSerialOrder(serial, serialOrder);
+
+    //motor.setPositionWithDuration(3600, 10);
 
     while(1) {
         sleep();
