@@ -6,13 +6,13 @@ import random
 if __name__ == "__main__":
     game = ga.Game()
 
-    players = [pl.Player(pl.Player.BLUE,True),pl.Player(pl.Player.RED,True)]
+    players = [pl.Player(pl.Player.BLUE,pl.PlayerType.RANDOM),pl.Player(pl.Player.RED,pl.PlayerType.HUMAN_TERMINAL)]
     currentPlayerId = random.randint(0, 1) 
 
     while (game.isFinished() != True):
         currentPlayer = players[currentPlayerId]
 
-        if (currentPlayer.isHuman == True):
+        if (currentPlayer.needDisplay() == True):
             game.getBoard().display()
         
         availableMovements = game.getAvailableMovementForAllPawns(currentPlayer)

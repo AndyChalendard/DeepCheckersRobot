@@ -286,14 +286,14 @@ if __name__ == "__main__":
     g.getBoard().display()
     #print(b.getSquare(2,2))
 
-    p = pl.Player(pl.Player.RED,True)
+    p = pl.Player(pl.Player.RED,pl.PlayerType.HUMAN_TERMINAL)
     #g.getAvailablePathMovement((0,2),p) #not your pawn
     #g.getAvailablePathMovement((0,5),p) #square not valid
     #print(g.getAvailablePathMovement((0,6),p)) #nothing there is always a pawn in (1,5)
     #print(g.getAvailablePathMovement((1,5),p))
     #print(g.getAvailablePathMovement((7,5),p)) 
 
-    p = pl.Player(pl.Player.BLUE,True) #blue
+    p = pl.Player(pl.Player.BLUE,pl.PlayerType.HUMAN_TERMINAL) #blue
     #print(g.getAvailablePathMovement((0,0),p)) #nothing there is always a pawn in (1,5)
     #print(g.getAvailablePathMovement((2,2),p)) 
     #print(g.getAvailablePathMovement((0,2),p)) 
@@ -305,7 +305,7 @@ if __name__ == "__main__":
     g._board.display()
     print(g._getAvailablePathMovement((2,2),p))
 
-    p = pl.Player(pl.Player.RED,True) #blue
+    p = pl.Player(pl.Player.RED,pl.PlayerType.HUMAN_TERMINAL) #blue
     g._board.reset()
     g._board.setSquare(2,4,bd.Pawns.BLUE)
     g._board.display()
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     g._board.display()
     print(g._getAvailablePathMovement((3,5),p))
 
-    p = pl.Player(pl.Player.BLUE,True) #blue
+    p = pl.Player(pl.Player.BLUE,pl.PlayerType.HUMAN_TERMINAL) #blue
     g2=Game()
     g2._board.resetEmpty()
     g2._board.setSquare(2,4,bd.Pawns.BLUE_KING)

@@ -24,8 +24,8 @@ class Pawns:
         return switcher.get(id,' ')
 
 class Board: 
-    SIZE_X=8
-    SIZE_Y=8
+    SIZE_X=10
+    SIZE_Y=SIZE_X
     def __init__(self): 
         self.reset()
 
@@ -64,16 +64,15 @@ class Board:
         for i in range(self.SIZE_X):
             line = line + str(i) + '   '
         print(line)
-        line = str(0)
+
         for i in range (self.SIZE_Y):
-            line = line + '|'
-            for j in range (self.SIZE_X//2):
+            line = str(i) + '|'
+            for j in range (self.SIZE_X):
                 if j%2 == i%2:
-                    line = line + Pawns.display(self._board[i][j]) + '|'
+                    line = line + Pawns.display(self._board[i][j//2]) + '|'
                 else:
-                    line = line +'   '+ '|' + Pawns.display(self._board[i][j]) + '|' +'   '+ '|'
+                    line = line + '   |'
             print (line)
-            line = str(i+1)
 
     def getSquare(self,x,y):
         """
