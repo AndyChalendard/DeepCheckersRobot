@@ -24,7 +24,7 @@ class Player:
                 print("--------RED TURN--------")
             else:
                 print("--------BLUE TURN--------")
-            while ((xPawn,yPawn) not in validPawns):
+            while ((xPawn,yPawn) not in validPawns): #this is not a valid pawn
                 print("Valid pawn" + str(validPawns))
                 coord = input("Enter the pawn you want move : x y\n").split()
                 if (len(coord) ==2):
@@ -43,7 +43,7 @@ class Player:
         xMov = -1
         yMov = -1
         if self.isHuman :
-            while ((xMov,yMov) not in finalMovement):
+            while ((xMov,yMov) not in finalMovement): #This is not a valid movement
                 print("Valid destination" + str(finalMovement))
                 coord = input("Enter the coordonates of the movement : x y\n ").split()
                 if (len(coord) == 2):

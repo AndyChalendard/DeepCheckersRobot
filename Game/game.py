@@ -37,19 +37,22 @@ class Game:
         return True
 
     def setMovement(self,pawn,destination,playerColor,movementValid):
-        if (destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.BLUE ):
+        '''
+        Method to set a movement in the board
+        '''
+        if (destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.BLUE ): #the pawn turns into a king
             self._board.setSquare(destination[0],destination[1],bd.Pawns.BLUE_KING)
-        elif(destination[1] == 0 and playerColor == pl.Player.RED):
+        elif(destination[1] == 0 and playerColor == pl.Player.RED): #the pawn turns into a king
             self._board.setSquare(destination[0],destination[1],bd.Pawns.RED_KING)
         else:
             self._board.setSquare(destination[0],destination[1],self._board.getSquare(pawn[0],pawn[1]))
 
-        self._board.setSquare(pawn[0],pawn[1],bd.Pawns.NULL)
+        self._board.setSquare(pawn[0],pawn[1],bd.Pawns.NULL) #the pawn done a movement
 
-        pawnJumped = []
+        pawnJumped = [] #list of opponent pawns that the movement jumped
         prec = pawn
         for elt in movementValid:
-            if(prec[0] - elt[0] >0):
+            if(prec[0] - elt[0] >0): #choose the direction of the movement
                 xdir = -1
             else:
                 xdir = 1
@@ -61,7 +64,7 @@ class Game:
             
             while (prec != elt):
                 if(self._board.getSquare(prec[0],prec[1]) != bd.Pawns.NULL):
-                    self._board.setSquare(prec[0],prec[1],bd.Pawns.NULL)
+                    self._board.setSquare(prec[0],prec[1],bd.Pawns.NULL) #there are no opponent pawns here now
                     pawnJumped.append(prec)
                 prec = (prec[0] + xdir,prec[1] + ydir)
 
@@ -255,6 +258,9 @@ class Game:
         return movements
 
     def pawnsCanBePlayed(self,availableMovements):
+        '''
+        Return a list of pawns that can be played with some movements
+        '''
         pawns = []
         for elt in availableMovements:
             if (elt[0] not in pawns):
@@ -262,6 +268,9 @@ class Game:
         return pawns
 
     def movementsValid(self,pawn,availableMovements):
+        '''
+        Return a list of valid movements with a pawn and a list of availablemovements given
+        '''
         movements=[]
         for elt in availableMovements:
             if (elt[0] == pawn):
