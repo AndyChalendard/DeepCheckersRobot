@@ -78,10 +78,3 @@ if __name__ == "__main__": #tests
     p2 = Player(Player.BLUE,True)
     print(p1.getColor())
     print(p2.getColor())
-    #t,s= raw_input().split()
-    #print(t)
-
-    x,y=p1.getPawnWanted()
-    z,w=p1.getMovementWanted()
-    print(x,y)
-    print(z,w)
