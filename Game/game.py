@@ -10,6 +10,63 @@ class Game:
     def getBoard(self):
         return self._board
 
+    def isFinished(self):
+        '''
+        Return True if the game is finished
+        '''
+        red = False #if there are red pawns in the board
+        blue = False #if there are blue pawns in the board
+
+        red_pawns = [bd.Pawns.RED, bd.Pawns.RED_KING]
+        blue_pawns = [bd.Pawns.BLUE_KING, bd.Pawns.BLUE]
+        
+        for x in range(self._board.SIZE_X):
+            for y in range(self._board.SIZE_Y):
+                try:
+                    pawn = self._board.getSquare(x,y)
+                    if (pawn in red_pawns ):
+                        red = True
+                        if (blue):
+                            return False
+                    elif(pawn in blue_pawns ):
+                        blue = True
+                        if (red):
+                            return False
+                except bd.SquareNotValid :
+                    pass
+        return True
+
+    def setMovement(self,pawn,destination,playerColor,movementValid):
+        if (destination[1] == 0 and playerColor == pl.Player.BLUE ):
+            self._board.setSquare(destination[0],destination[1],bd.Pawns.BLUE_KING)
+        elif(destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.RED):
+            self._board.setSquare(destination[0],destination[1],bd.Pawns.RED_KING)
+        else:
+            self._board.setSquare(destination[0],destination[1],self._board.getSquare(pawn[0],pawn[1]))
+
+        self._board.setSquare(pawn[0],pawn[1],bd.Pawns.NULL)
+
+        pawnJumped = []
+        prec = pawn
+        for elt in movementValid:
+            if(prec[0] - elt[0] >0):
+                xdir = -1
+            else:
+                xdir = 1
+            if(prec[1] - elt[1] >0):
+                ydir = -1
+            else:
+                ydir = 1
+            prec = (prec[0] + xdir,prec[1] + ydir)
+            
+            while (prec != elt):
+                if(self._board.getSquare(prec[0],prec[1]) != bd.Pawns.NULL):
+                    self._board.setSquare(prec[0],prec[1],bd.Pawns.NULL)
+                    pawnJumped.append(prec)
+                prec = (prec[0] + xdir,prec[1] + ydir)
+
+        return pawnJumped
+
 
     def _checkSimplePawnsMovement(self,x,y,color,board,paths,currentPath = []):
         '''
@@ -197,6 +254,24 @@ class Game:
 
         return movements
 
+    def pawnsCanBePlayed(self,availableMovements):
+        pawns = []
+        for elt in availableMovements:
+            if (elt[0] not in pawns):
+                pawns.append(elt[0])
+        return pawns
+
+    def movementsValid(self,pawn,availableMovements):
+        movements=[]
+        for elt in availableMovements:
+            if (elt[0] == pawn):
+                movements.append(elt[1:])
+        return movements
+
+    
+
+
+
 if __name__ == "__main__":
     g=Game()
     g.getBoard().display()
@@ -248,8 +323,24 @@ if __name__ == "__main__":
     print(g2._getAvailablePathMovement((2,4),p))
 
     g._board.reset()
-    print(g.getAvailableMovementForAllPawns(p))
+    availableMovements = g.getAvailableMovementForAllPawns(p)
+    print(availableMovements)
+    movementsValid = g.movementsValid((2,2),availableMovements)
+    t=[movementsValid[i][-1:] for i in range (len(movementsValid))]
+    print(t)
+
+
+
+
+
     print(g2.getAvailableMovementForAllPawns(p))
+
+    g3=Game()
+    g3._board.resetEmpty()
+    g3._board.setSquare(2,4,bd.Pawns.BLUE_KING)
+    g3._board.setSquare(5,1,bd.Pawns.BLUE)
+    g3._board.display()
+    print(g3.isFinished())
 
 
 

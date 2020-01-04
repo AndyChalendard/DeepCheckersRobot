@@ -13,28 +13,38 @@ class Player:
         '''
         return self._color
 
-    def getPawnWanted(self):
+    def getPawnWanted(self,validPawns):
         '''
         Get the pawn that the player wants to play with
         '''
+        xPawn = -1
+        yPawn = -1
         if self.isHuman :
-            coord = input("Enter the pawn you want move : x y\n").split()
-            if (len(coord) > 2):
-                raise Exception("Enter only x y") 
-            xPawn = int(coord[0])
-            yPawn = int (coord[1])
+            while ((xPawn,yPawn) not in validPawns):
+                print("Valid pawn" + str(validPawns))
+                coord = input("Enter the pawn you want move : x y\n").split()
+                if (len(coord) ==2):
+                    xPawn = int(coord[0])
+                    yPawn = int (coord[1])
         return xPawn, yPawn
 
-    def getMovementWanted(self):
+    def getMovementWanted(self,validMovements):
         """
         Get the movement that the player wants to do
         """
+
+        finalMovement = []
+        for elt in validMovements:
+            finalMovement.append(elt[len(elt)-1])
+        xMov = -1
+        yMov = -1
         if self.isHuman :
-            coord = input("Enter the coordonates of the movement : x y\n ").split()
-            if (len(coord) > 2):
-                raise Exception("Enter only x y") 
-            xMov = int(coord[0])
-            yMov = int (coord[1])
+            while ((xMov,yMov) not in finalMovement):
+                print("Valid destination" + str(validMovements))
+                coord = input("Enter the coordonates of the movement : x y\n ").split()
+                if (len(coord) == 2):
+                    xMov = int(coord[0])
+                    yMov = int (coord[1])
         return xMov, yMov
         
 
