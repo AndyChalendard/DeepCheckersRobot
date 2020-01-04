@@ -1,11 +1,13 @@
 import player as pl
 import game as ga
+import random
 
 
 if __name__ == "__main__":
     game = ga.Game()
+
     players = [pl.Player(pl.Player.BLUE,True),pl.Player(pl.Player.RED,True)]
-    currentPlayerId = 0 #TODO rand()
+    currentPlayerId = random.randint(0, 1) 
 
     while (game.isFinished() != True):
         currentPlayer = players[currentPlayerId]
@@ -28,6 +30,11 @@ if __name__ == "__main__":
         if (len(jumpedPawns) > 0):
             print("You jumped " +str(jumpedPawns))
         currentPlayerId =(currentPlayerId +1) % 2
+    
+    print("-------------------Game finish------------------")
+    game.getBoard().display()
+    print("------------------------------------------------")
+
 
 
 

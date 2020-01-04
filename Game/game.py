@@ -37,9 +37,9 @@ class Game:
         return True
 
     def setMovement(self,pawn,destination,playerColor,movementValid):
-        if (destination[1] == 0 and playerColor == pl.Player.BLUE ):
+        if (destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.BLUE ):
             self._board.setSquare(destination[0],destination[1],bd.Pawns.BLUE_KING)
-        elif(destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.RED):
+        elif(destination[1] == 0 and playerColor == pl.Player.RED):
             self._board.setSquare(destination[0],destination[1],bd.Pawns.RED_KING)
         else:
             self._board.setSquare(destination[0],destination[1],self._board.getSquare(pawn[0],pawn[1]))
