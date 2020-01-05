@@ -20,10 +20,20 @@ void callBackBlink(DigitalOut *led) {
     }
 }
 
+DigitalOut motorTheta1Dir(PA_13);
+DigitalOut motorTheta1Step(PA_14);
+DigitalIn  motorTheta1Home(PC_3);
+
 DigitalOut motorTheta2Dir(PC_10);
 DigitalOut motorTheta2Step(PC_12);
+DigitalIn  motorTheta2Home(PC_2);
 
-DigitalIn  motorTheta1Home(PC_3);
+DigitalOut motorTheta3Dir(PA_15);
+DigitalOut motorTheta3Step(PB_7);
+DigitalIn  motorTheta3Home(PC_0);
+
+
+DigitalOut MagneticField(PB_8);
 
 Semaphore semaphoreSerialOrder(0);
 
@@ -34,8 +44,9 @@ int main() {
     serial.printf("Demarrage de la carte...\r\n");
 
     serial.printf("Initialisation des variables...\r\n");
-    // Moto theta3 -185
-    Motor motorTheta2(motorTheta2Dir, motorTheta2Step, motorTheta1Home, 90, 90, 5);
+    // Moto theta1 -185
+    Motor motorTheta2(motorTheta2Dir, motorTheta2Step, motorTheta2Home, 90, 0, 5);
+    //Motor motorTheta3(motorTheta3Dir, motorTheta3Step, motorTheta3Home, 0, 0, 5);
 
 
     serial.printf("Initialisation des moteurs...\r\n");
