@@ -1,6 +1,6 @@
 #include "motor.hpp"
 
-Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInHome, float homePosition, char diminution, unsigned char stepResolution) {
+Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInHome, float homePosition, float interruptorPosition, char diminution, unsigned char stepResolution) {
     outputDirection = &digitalOutDirection;
     outputStep = &digitalOutStep;
     inputHome = &digitalInHome;
@@ -14,6 +14,7 @@ Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, Digi
     this->stepResolution = stepResolution;
     this->diminution = diminution;
     this->homePosition = homePosition;
+    this->interruptorPosition = interruptorPosition;
 
     motorStateLow = MotorStateLow::init;
 
@@ -83,7 +84,7 @@ void Motor::goHome() {
     posWanted = posCurrent;
 
     // We setup the current position
-    posCurrent = (int) this->homePosition * stepResolution * this->diminution * 200/360;
+    posCurrent = (int) this->interruptorPosition * stepResolution * this->diminution * 200/360;
     
-    setPosition(0, 1400);
+    setPosition(homePosition, 1400);
 }
