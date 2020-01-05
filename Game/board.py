@@ -24,7 +24,7 @@ class Pawns:
         return switcher.get(id,' ')
 
 class Board: 
-    SIZE_X=10
+    SIZE_X=8
     SIZE_Y=SIZE_X
     def __init__(self): 
         self.reset()
@@ -37,6 +37,23 @@ class Board:
         newBoard._board = np.copy(self._board)
         return newBoard
     
+    def reverseColor(self):
+        for i in range(self.SIZE_Y):
+            for j in range(self.SIZE_X//2):
+                square = self._board[i][j]
+                if (square == Pawns.BLUE):
+                    self._board[i][j] == Pawns.RED
+                elif (square == Pawns.RED):
+                    self._board[i][j] == Pawns.BLUE
+                elif (square == Pawns.BLUE_KING):
+                    self._board[i][j] == Pawns.RED_KING
+                elif (square == Pawns.RED_KING):
+                    self._board[i][j] == Pawns.BLUE_KING
+
+
+    def getBoard(self):
+        return self._board
+
     def reset(self):
         """
         Reset the _board
@@ -102,6 +119,13 @@ class Board:
             raise SquareNotValid("The case (" + str(x) +","+ str(y) + ") is not valid")
             #raise Exception("toto")
         return(i,j)
+
+    def reverseBoard(self):
+        bd = Board()
+        for i in range(self.SIZE_Y):
+            for j in range(self.SIZE_X//2):
+                bd._board[i][j] = self._board[self.SIZE_Y-i-1][self.SIZE_X//2-j-1]
+        return bd
 
 if __name__ == "__main__": #tests
     b=Board()

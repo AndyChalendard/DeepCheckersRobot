@@ -6,9 +6,13 @@ import numpy as np
 class Game:
     def __init__(self):
         self._board = bd.Board()
+
     
-    def getBoard(self):
-        return self._board
+    def getBoard(self, color):
+        if (color == pl.Player.RED):
+            return self._board
+        else:
+            return self._board.reverseBoard()
 
     def isFinished(self):
         '''
@@ -20,6 +24,11 @@ class Game:
         red_pawns = [bd.Pawns.RED, bd.Pawns.RED_KING]
         blue_pawns = [bd.Pawns.BLUE_KING, bd.Pawns.BLUE]
         
+        availableMovRed = self.getAvailableMovementForAllPawns(pl.Player.RED)
+        availableMovBlue = self.getAvailableMovementForAllPawns(pl.Player.BLUE)
+        if (len(availableMovRed) == 0 or len(availableMovBlue) == 0): #there are only one pawn but it can't be played
+            return True
+
         for x in range(self._board.SIZE_X):
             for y in range(self._board.SIZE_Y):
                 try:
@@ -34,12 +43,25 @@ class Game:
                             return False
                 except bd.SquareNotValid :
                     pass
+
         return True
+
+    def reset(self):
+        self._board.reset()
 
     def setMovement(self,pawn,destination,playerColor,movementValid):
         '''
         Method to set a movement in the board
         '''
+        if (playerColor == pl.Player.BLUE):
+            newMovementValid = []
+            for elt in movementValid:
+                newMovementValid.append((self._board.SIZE_X - elt[0] - 1,self._board.SIZE_Y - elt[1] - 1))
+            movementValid = newMovementValid
+            destination = (self._board.SIZE_X - destination[0] - 1,self._board.SIZE_Y - destination[1] - 1)
+            pawn = (self._board.SIZE_X - pawn[0] - 1,self._board.SIZE_Y - pawn[1] - 1)
+
+
         if (destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.BLUE ): #the pawn turns into a king
             self._board.setSquare(destination[0],destination[1],bd.Pawns.BLUE_KING)
         elif(destination[1] == 0 and playerColor == pl.Player.RED): #the pawn turns into a king
@@ -144,7 +166,7 @@ class Game:
             if (len(currentPath) != 0) :
                 paths.append(currentPath)
 
-    def _getAvailablePathMovement(self,square,player):
+    def _getAvailablePathMovement(self,square,playerColor):
         '''
             Return a boolean oblogatory which determine if we have an obligatory movement to do 
              a list of different square which if the steps to arrive in an available movement
@@ -159,7 +181,7 @@ class Game:
         if (color == bd.Pawns.NULL) : #square empty
             raise bd.PawnsException("The square (" + str(x) +"," +str(y) +") don't have any Pawns here") 
         else :
-            if (player.getColor() == pl.Player.RED):
+            if (playerColor == pl.Player.RED):
                 if (color == bd.Pawns.BLUE or color ==bd.Pawns.BLUE_KING): #not using his pawn
                     raise bd.PawnsException("It is not your pawn !")
             else :
@@ -168,11 +190,11 @@ class Game:
             
             if (color == bd.Pawns.BLUE or color == bd.Pawns.RED): #for simple pawn
 
-                self._checkSimplePawnsMovement(x,y,player.getColor(),self._board,paths)
+                self._checkSimplePawnsMovement(x,y,color,self._board,paths)
 
                 if (len(paths) == 0): #we have an obligatory movement
                     obligatory = False
-                    if (player.getColor() == pl.Player.BLUE):
+                    if (playerColor == pl.Player.BLUE):
                         j=1 #the simple pawn can only go ahead 
                     else:
                         j=-1#the simple pawn can only go ahead 
@@ -185,7 +207,7 @@ class Game:
                             pass
 
             else: #for kings 
-                self._checkKingPawnsMovement(x,y,player.getColor(),self._board,paths)
+                self._checkKingPawnsMovement(x,y,playerColor,self._board,paths)
                 if (len(paths) == 0): #we have an obligatory movement
                     obligatory = False
 
@@ -216,11 +238,11 @@ class Game:
 
         return obligatory,paths 
 
-    def getAvailableMovementForAllPawns(self,player):
+    def getAvailableMovementForAllPawns(self,color):
         '''
             Return a list of all available movement for all pawns
         '''
-        if (player.getColor() == pl.Player.RED):
+        if (color == pl.Player.RED):
             myPawn = [bd.Pawns.RED, bd.Pawns.RED_KING]
         else:
             myPawn = [bd.Pawns.BLUE, bd.Pawns.BLUE_KING]
@@ -231,7 +253,7 @@ class Game:
             for y in range(self._board.SIZE_Y):
                 try:
                     if (self._board.getSquare(x,y) in myPawn):
-                        obligatory,movementPawn = self._getAvailablePathMovement((x,y),player)
+                        obligatory,movementPawn = self._getAvailablePathMovement((x,y),color)
                         
                         if (obligatory==True and obligatoryMovementFounded==False):#there are one obligatory movement
                             obligatoryMovementFounded = True
@@ -255,7 +277,17 @@ class Game:
                 newMov.append(movements[i])
         movements = newMov
 
-        return movements
+        if (color == pl.Player.RED):
+            return movements
+        else:
+            reverseMovements = []
+            for mov in movements:
+                newMov = []
+                for elt in mov:
+                    newMov.append((self._board.SIZE_X - elt[0] - 1,self._board.SIZE_Y - elt[1] - 1))
+                reverseMovements.append(newMov)
+            return reverseMovements
+
 
     def pawnsCanBePlayed(self,availableMovements):
         '''

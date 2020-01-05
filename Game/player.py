@@ -1,4 +1,5 @@
 import random
+import models as mod
 class PlayerType:
     HUMAN_TERMINAL = 0
     IA = 1
@@ -11,6 +12,8 @@ class Player:
     def __init__(self,color,playerType): 
         self._color = color
         self._type = playerType
+        if (self._type == PlayerType.IA):
+            self._IA = mod.IA(8,8) #sizeX sizeY
 
     def needDisplay(self):
         if(self._type == PlayerType.HUMAN_TERMINAL):
@@ -24,7 +27,7 @@ class Player:
         '''
         return self._color
 
-    def getPawnWanted(self,validPawns):
+    def getPawnWanted(self,validPawns, board):
         '''
         Get the pawn that the player wants to play with
         '''
@@ -45,13 +48,16 @@ class Player:
             pawn = random.randint(0, len(validPawns)-1)
             xPawn,yPawn = validPawns[pawn]
             print("Player choose the pawn: " + str((xPawn,yPawn)))
+        elif(self._type == PlayerType.IA):
+            if (self._color == self.BLUE):
+                board.reverseColor()
+            xPawn,yPawn = self._IA.getPawnWanted(board, validPawns)
         return xPawn, yPawn
 
-    def getMovementWanted(self,validMovements):
+    def getMovementWanted(self,validMovements, board):
         """
         Get the movement that the player wants to do
         """
-
         finalMovement = []
         for elt in validMovements:
             finalMovement.append(elt[len(elt)-1])
@@ -68,10 +74,21 @@ class Player:
             mov = random.randint(0, len(finalMovement)-1)
             xMov,yMov = finalMovement[mov]
             print("and move to " + str((xMov,yMov)))
+        elif(self._type == PlayerType.IA):
+            if (self._color == self.BLUE):
+                board.reverseColor()
+            xMov,yMov = self._IA.getMovementWanted(board, finalMovement)
         return xMov, yMov
-        
 
+    def setReward(self, reward, board, availablePawn):
+        if (self._type == PlayerType.IA):
+            if (self._color == self.BLUE):
+                board.reverseColor()
+            self._IA.learn(reward, availablePawn, board)
 
+    def saveModel(self):
+        if (self._type == PlayerType.IA):
+            self._IA.saveNeuralNetworks()
 
 if __name__ == "__main__": #tests
     p1 = Player(Player.RED,True)
