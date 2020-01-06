@@ -74,6 +74,10 @@ int Motor::getStep(float position, bool withSecurity) {
 
     result = (int) (position * ((float) this->diminution) * ((float) stepResolution) * ((float) 200/360));
 
+    if (this->motorReversed) {
+        result = -result;
+    }
+
     return result;
 }
 
@@ -82,11 +86,7 @@ void Motor::setPositionStep(int positionStep, int speed) {
     setSpeed(speed);
 
     // Degres to steps
-    if (this->motorReversed) {
-        this->posWanted = -positionStep;
-    }else{
-        this->posWanted = positionStep;
-    }
+    this->posWanted = positionStep;
 }
 
 void Motor::setPosition(float position, int speed, bool withSecurity) {
@@ -96,7 +96,7 @@ void Motor::setPosition(float position, int speed, bool withSecurity) {
 void Motor::setPositionWithDuration(float position, float duration, bool withSecurity) {
     int finalStep = getStep(position, withSecurity);
 
-    setPositionStep(finalStep, (int) (abs(finalStep-posCurrent) / duration));
+    setPositionStep(finalStep, (int) abs(finalStep - posCurrent)/duration);
 }
 
 void Motor::goHome() {
@@ -114,11 +114,7 @@ void Motor::goHome() {
     posWanted = posCurrent;
 
     // We setup the current position
-    if (this->motorReversed) {
-        this->posCurrent = -getStep(this->interruptorPosition, false);
-    }else{
-        this->posCurrent = getStep(this->interruptorPosition, false);
-    }
+    this->posCurrent = getStep(this->interruptorPosition, false);
     setPosition(this->homePosition, 1400);
 
     waitUntilMove();

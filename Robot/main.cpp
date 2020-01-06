@@ -5,6 +5,9 @@
 
 #include "test.hpp"
 
+#define SPEED    100       // mm/s
+#define DIV_TIME 300       // In ms
+
 RawSerial serial(USBTX, USBRX, 9600);
 
 Thread threadBlinkLed;
@@ -39,14 +42,43 @@ DigitalOut magneticField(PC_1);
 
 Semaphore semaphoreSerialOrder(0);
 
+
+// Go to the pause position
+void goPausePosition(Motor & m1, Motor & m2, Motor & m3) {
+    float x,y,z;
+    GeoSpace tmpSpace;
+
+    tmpSpace.setCoord(-200, 0, 20);
+    tmpSpace.getAngle(x, y, z);
+
+    m1.setPosition(x);
+    m2.setPosition(y);
+    m3.setPosition(z, 1200);
+
+    m1.waitUntilMove();
+    m2.waitUntilMove();
+    m3.waitUntilMove();
+}
+
 // Main
 int main() {
+    float normMove; // In mm
+    long  tmpsMove; // In ms
+    int   nbDivMove;
+    float timeToDest; // In ms
+    float truePosX, truePosY, truePosZ;
+    float dirX, dirY, dirZ;
+    float targetX, targetY, targetZ;
+
     float tmpFloat1, tmpFloat2, tmpFloat3;
 
     serial.printf("Starting...\r\n");
 
     serial.printf("Initialization of variables...\r\n");
     
+    // Initialisation of led
+    led1 = 1;
+
     // Init of magnetic hand
     magneticField = 0;
 
@@ -60,163 +92,88 @@ int main() {
 
     // Init of geoSpace
     GeoSpace geoSpace;
-    geoSpace.setCoord(-200, 0, 20); // pause position
+    targetX = -200; targetY = 0; targetZ = 20; // pause position
+    truePosX = -200; truePosY = 0; truePosZ = 20;
+    geoSpace.setCoord(targetX, targetY, targetZ);
+
+    targetX = 0; targetY = 300; targetZ = 100;
 
     // Waiting for button
+    serial.printf("Waiting user...\r\n");
     while (btn != 0) {
         ThisThread::sleep_for(50);
     }
-    
-    threadBlinkLed.start(callback(callBackBlink, &led1));
 
-    serial.printf("Mouving to origin...\r\n");
+    serial.printf("Moving to origin...\r\n");
     motorTheta2.goHome();
     motorTheta3.goHome();
     motorTheta1.goHome();
 
-    int i = 0;
-    int j = 0;
+    serial.printf("Moving to pause position...\r\n");
+    goPausePosition(motorTheta1, motorTheta2, motorTheta3);
 
-    int time = 10000;
+    // Waiting for button
+    serial.printf("Waiting user...\r\n");
+    while (btn != 0) {
+        ThisThread::sleep_for(50);
+    }
+
+    threadBlinkLed.start(callback(callBackBlink, &led1));
+
+    serial.printf("____loop____\r\n");
 
     while(1) {
-        geoSpace.getAngle(tmpFloat1, tmpFloat2, tmpFloat3);
+        // Figure out the norm of the deplacement
+        dirX = (targetX-truePosX);
+        dirY = (targetY-truePosY);
+        dirZ = (targetZ-truePosZ);
+        normMove  = dirX*dirX;
+        normMove += dirY*dirY;
+        normMove += dirZ*dirZ;
+        normMove = sqrt(normMove);
 
-        //serial.printf("Moving to x:%f y:%f z:%f; t1:%f t2:%f t3:%f !\r\n", -30.0f,190.0f,5.0f, tmpFloat1, tmpFloat2, tmpFloat3);
-        motorTheta1.setPosition(tmpFloat1);
-        motorTheta2.setPosition(tmpFloat2);
-        motorTheta3.setPosition(tmpFloat3);
+        // If the move is not null
+        if (normMove > 1) {
+            // Figure out the time to move to the target position
+            tmpsMove = ((normMove / SPEED) * 1000) - 1;
 
-        ThisThread::sleep_for(time);
+            // Figure out the number of division
+            nbDivMove = (tmpsMove / DIV_TIME) + 1;
+            
+            // Figure out the vector to add
+            dirX = dirX / nbDivMove;
+            dirY = dirY / nbDivMove;
+            dirZ = dirZ / nbDivMove;
 
-        switch(i) {
-            case 0:
-                magneticField = 0;
-                geoSpace.setCoord(30, 190, 20);
-                time = 15000;
-                break;
-            case 1:
-                magneticField = 0;
-                geoSpace.setCoord(30, 190, 6);
-                time = 3000;
-                break;
-            case 2:
-                magneticField = 1;
-                geoSpace.setCoord(30, 190, 20);
-                time = 3000;
-                break;
-            case 3:
-                magneticField = 1;
-                geoSpace.setCoord(-30, 190, 20);
-                time = 3000;
-                break;
-            case 4:
-                magneticField = 1;
-                geoSpace.setCoord(-30, 190, 6);
-                time = 3000;
-                break;
-            case 5:
-                magneticField = 0;
-                geoSpace.setCoord(-30, 190, 20);
-                time = 3000;
-                break;
-            case 6:
-                magneticField = 0;
-                geoSpace.setCoord(30, 130, 20);
-                time = 5000;
-                break;
-            case 7:
-                magneticField = 0;
-                geoSpace.setCoord(30, 130, 6);
-                time = 3000;
-                break;
-            case 8:
-                magneticField = 1;
-                geoSpace.setCoord(30, 130, 20);
-                time = 3000;
-                break;
-            case 9:
-                magneticField = 1;
-                geoSpace.setCoord(30, 190, 20);
-                time = 3000;
-                break;
-            case 10:
-                magneticField = 1;
-                geoSpace.setCoord(30, 190, 6);
-                time = 3000;
-                break;
-            case 11:
-                magneticField = 0;
-                geoSpace.setCoord(30, 190, 20);
-                time = 3000;
-                break;
-            case 12:
-                magneticField = 0;
-                geoSpace.setCoord(-30, 130, 20);
-                time = 5000;
-                break;
-            case 13:
-                magneticField = 0;
-                geoSpace.setCoord(-30, 130, 6);
-                time = 3000;
-                break;
-            case 14:
-                magneticField = 1;
-                geoSpace.setCoord(-30, 130, 20);
-                time = 3000;
-                break;
-            case 15:
-                magneticField = 1;
-                geoSpace.setCoord(30, 130, 20);
-                time = 3000;
-                break;
-            case 16:
-                magneticField = 1;
-                geoSpace.setCoord(30, 130, 6);
-                time = 3000;
-                break;
-            case 17:
-                magneticField = 0;
-                geoSpace.setCoord(30, 130, 20);
-                time = 3000;
-                break;
-            case 18:
-                magneticField = 0;
-                geoSpace.setCoord(-30, 190,20);
-                time = 5000;
-                break;
-            case 19:
-                magneticField = 0;
-                geoSpace.setCoord(-30, 190, 6);
-                time = 3000;
-                break;
-            case 20:
-                magneticField = 1;
-                geoSpace.setCoord(-30, 190, 20);
-                time = 3000;
-                break;
-            case 21:
-                magneticField = 1;
-                geoSpace.setCoord(-30, 130, 20);
-                time = 3000;
-                break;
-            case 22:
-                magneticField = 1;
-                geoSpace.setCoord(-30, 130, 6);
-                time = 3000;
-                break;
-            case 23:
-                magneticField = 0;
-                geoSpace.setCoord(-30, 130, 20);
-                time = 3000;
-                break;
-            default:
-                time = 1;
-                i = -1;
+            // Figure out the new position (with a path ahead)
+            truePosX += dirX;
+            truePosY += dirY;
+            truePosZ += dirZ;
+            if (nbDivMove != 1) {
+                tmpFloat1 = truePosX + dirX;
+                tmpFloat2 = truePosY + dirY;
+                tmpFloat3 = truePosZ + dirZ;
+                timeToDest = DIV_TIME * 2;
+            }else{
+                tmpFloat1 = truePosX;
+                tmpFloat2 = truePosY;
+                tmpFloat3 = truePosZ;
+                timeToDest = DIV_TIME;
+            }
+            serial.printf("dirX:%f, dirY:%f, dirZ:%f, norm: %f, tmpsMove: %i\n\r", dirX, dirY, dirZ, normMove, tmpsMove);
+            serial.printf("truePosX: %f, truePosY: %f, truePosZ: %f\n\r", truePosX, truePosY, truePosZ);
+
+            // Figure out the angle motor require
+            geoSpace.setCoord(tmpFloat1, tmpFloat2, tmpFloat3);
+            serial.printf("posX: %f, posY: %f, posZ: %f, timeToDest: %f\n\r", tmpFloat1, tmpFloat2, tmpFloat3, timeToDest);
+            geoSpace.getAngle(tmpFloat1, tmpFloat2, tmpFloat3);
+
+            // Send to motors the new angle, and the time to destination (two )
+            motorTheta1.setPositionWithDuration(tmpFloat1, timeToDest/1000);
+            motorTheta2.setPositionWithDuration(tmpFloat2, timeToDest/1000);
+            motorTheta3.setPositionWithDuration(tmpFloat3, timeToDest/1000);
         }
 
-        i++;
-
-        sleep();
+        ThisThread::sleep_for(DIV_TIME);
     }
 }
