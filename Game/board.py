@@ -38,17 +38,21 @@ class Board:
         return newBoard
     
     def reverseColor(self):
+        bd = Board()
         for i in range(self.SIZE_Y):
             for j in range(self.SIZE_X//2):
                 square = self._board[i][j]
                 if (square == Pawns.BLUE):
-                    self._board[i][j] == Pawns.RED
+                    bd._board[i][j] == Pawns.RED
                 elif (square == Pawns.RED):
-                    self._board[i][j] == Pawns.BLUE
+                    bd._board[i][j] == Pawns.BLUE
                 elif (square == Pawns.BLUE_KING):
-                    self._board[i][j] == Pawns.RED_KING
+                    bd._board[i][j] == Pawns.RED_KING
                 elif (square == Pawns.RED_KING):
-                    self._board[i][j] == Pawns.BLUE_KING
+                    bd._board[i][j] == Pawns.BLUE_KING
+                else:
+                    bd._board[i][j] == Pawns.NULL
+        return bd
 
 
     def getBoard(self):

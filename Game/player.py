@@ -49,9 +49,10 @@ class Player:
             xPawn,yPawn = validPawns[pawn]
             print("Player choose the pawn: " + str((xPawn,yPawn)))
         elif(self._type == PlayerType.IA):
+            tmpBoard = board.copy()
             if (self._color == self.BLUE):
-                board.reverseColor()
-            xPawn,yPawn = self._IA.getPawnWanted(board, validPawns)
+                tmpBoard = board.reverseColor()
+            xPawn,yPawn = self._IA.getPawnWanted(tmpBoard, validPawns)
         return xPawn, yPawn
 
     def getMovementWanted(self,validMovements, board):
@@ -75,16 +76,18 @@ class Player:
             xMov,yMov = finalMovement[mov]
             print("and move to " + str((xMov,yMov)))
         elif(self._type == PlayerType.IA):
+            tmpBoard = board.copy()
             if (self._color == self.BLUE):
-                board.reverseColor()
-            xMov,yMov = self._IA.getMovementWanted(board, finalMovement)
+                tmpBoard = board.reverseColor()
+            xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         return xMov, yMov
 
     def setReward(self, reward, board, availablePawn):
         if (self._type == PlayerType.IA):
+            tmpBoard = board.copy()
             if (self._color == self.BLUE):
-                board.reverseColor()
-            self._IA.learn(reward, availablePawn, board)
+                tmpBoard = board.reverseColor()
+            self._IA.learn(reward, availablePawn, tmpBoard)
 
     def saveModel(self):
         if (self._type == PlayerType.IA):

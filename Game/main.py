@@ -27,10 +27,10 @@ if __name__ == "__main__":
             validPawns = game.pawnsCanBePlayed(availableMovements)
             x,y=currentPlayer.getPawnWanted(validPawns,game.getBoard(currentPlayer.getColor()))
             print("WANTS : " +str((x,y)) )
-            if (x == -1):
-                game.getBoard(currentPlayer.getColor()).display()
+
             movementsValid = game.movementsValid((x,y),availableMovements)
             xmov,ymov = currentPlayer.getMovementWanted(movementsValid, game.getBoard(currentPlayer.getColor()))
+            
             
             if (currentPlayer.getColor() == pl.Player.RED):
                 print("RED move " +str((x,y)) + " to " + str((xmov,ymov)))

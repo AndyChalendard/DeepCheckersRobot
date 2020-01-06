@@ -10,7 +10,7 @@ class Game:
     
     def getBoard(self, color):
         if (color == pl.Player.RED):
-            return self._board
+            return self._board.copy()
         else:
             return self._board.reverseBoard()
 
@@ -190,7 +190,7 @@ class Game:
             
             if (color == bd.Pawns.BLUE or color == bd.Pawns.RED): #for simple pawn
 
-                self._checkSimplePawnsMovement(x,y,color,self._board,paths)
+                self._checkSimplePawnsMovement(x,y,playerColor,self._board,paths)
 
                 if (len(paths) == 0): #we have an obligatory movement
                     obligatory = False
@@ -238,11 +238,11 @@ class Game:
 
         return obligatory,paths 
 
-    def getAvailableMovementForAllPawns(self,color):
+    def getAvailableMovementForAllPawns(self,playerColor):
         '''
             Return a list of all available movement for all pawns
         '''
-        if (color == pl.Player.RED):
+        if (playerColor == pl.Player.RED):
             myPawn = [bd.Pawns.RED, bd.Pawns.RED_KING]
         else:
             myPawn = [bd.Pawns.BLUE, bd.Pawns.BLUE_KING]
@@ -253,7 +253,7 @@ class Game:
             for y in range(self._board.SIZE_Y):
                 try:
                     if (self._board.getSquare(x,y) in myPawn):
-                        obligatory,movementPawn = self._getAvailablePathMovement((x,y),color)
+                        obligatory,movementPawn = self._getAvailablePathMovement((x,y),playerColor)
                         
                         if (obligatory==True and obligatoryMovementFounded==False):#there are one obligatory movement
                             obligatoryMovementFounded = True
@@ -277,7 +277,7 @@ class Game:
                 newMov.append(movements[i])
         movements = newMov
 
-        if (color == pl.Player.RED):
+        if (playerColor == pl.Player.RED):
             return movements
         else:
             reverseMovements = []
