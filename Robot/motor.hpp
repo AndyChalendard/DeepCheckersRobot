@@ -69,6 +69,9 @@ class Motor {
 
         // Take home
         void goHome();
+
+        // Wait while the motor move
+        void waitUntilMove();
 };
 
 #endif

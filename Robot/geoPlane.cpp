@@ -1,8 +1,8 @@
 #include "geoPlane.hpp"
 #include <cmath>
 
-#define VAL_A 170   // Pillar Height
-#define VAL_B 160   // Back Arm Length
+#define VAL_A 172   // Pillar Height
+#define VAL_B 159.5f   // Back Arm Length
 #define VAL_C 285   // Front Arm Length
 #define VAL_D 34    // Hand Height
 

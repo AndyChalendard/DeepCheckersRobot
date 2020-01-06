@@ -121,6 +121,10 @@ void Motor::goHome() {
     }
     setPosition(this->homePosition, 1400);
 
+    waitUntilMove();
+}
+
+void Motor::waitUntilMove() {
     while (posCurrent != posWanted) {
         ThisThread::sleep_for(50);
     }

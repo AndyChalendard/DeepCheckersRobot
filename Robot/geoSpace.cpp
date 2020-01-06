@@ -14,20 +14,6 @@ void GeoSpace::setCoord(float x, float y, float z) {
     coordIsCalc = true;
     thetaIsCalc = false;
 
-    // prevention of prohibited positions (we put the robot in the accessible area, but at the same height)
-    // Motor 1 position
-    if (z < 70) {
-        if (x > 0 && x < 95) {
-            if (y > 0 && y < 40) {
-                x = 95;
-                y = 40;
-            }else if (y < 0 && y > -40) {
-                x = 95;
-                y = -40;
-            }
-        }
-    }
-
     this->x = x;
     this->y = y;
     this->z = z;
@@ -38,7 +24,7 @@ void GeoSpace::setCoord(float x, float y, float z) {
 // Angle params is return in degres
 void GeoSpace::getAngle(float & theta1, float & theta2, float & theta3) {
     if (thetaIsCalc == false) {
-        this->theta1 = atan2(this->y, this->x) * 180/3.14159;
+        this->theta1 = atan2(this->x, this->y) * 180/3.14159;
 
         thetaIsCalc = true;
     }
@@ -54,8 +40,8 @@ void GeoSpace::getCoord(float & x, float & y, float & z) {
     if (coordIsCalc == false) {
         plane.getCoord(norm, this->z);
 
-        this->x = norm * cos(this->theta1*3.14159/180);
-        this->y = norm * sin(this->theta1*3.14159/180);
+        this->x = norm * sin(this->theta1*3.14159/180);
+        this->y = norm * cos(this->theta1*3.14159/180);
 
         coordIsCalc = true;
     }
