@@ -1,9 +1,9 @@
 #include "motor.hpp"
 
-Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInHome, float maxPosition, float minPosition, float homePosition, float interruptorPosition, char diminution, bool motorReversed, bool homePosSide, unsigned char stepResolution) {
+Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInOrigin, float maxPosition, float minPosition, float originPosition, float interruptorPosition, char diminution, bool motorReversed, bool originPosSide, unsigned char stepResolution) {
     outputDirection = &digitalOutDirection;
     outputStep = &digitalOutStep;
-    inputHome = &digitalInHome;
+    inputHome = &digitalInOrigin;
 
     *outputDirection = 0;
     *outputStep = 0;
@@ -18,8 +18,8 @@ Motor::Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, Digi
 
     this->stepResolution = stepResolution;
     this->diminution = diminution;
-    this->homePosSide = homePosSide;
-    this->homePosition = homePosition;
+    this->originPosSide = originPosSide;
+    this->originPosition = originPosition;
     this->interruptorPosition = interruptorPosition;
 
     motorStateLow = MotorStateLow::init;
@@ -99,9 +99,9 @@ void Motor::setPositionWithDuration(float position, float duration, bool withSec
     setPositionStep(finalStep, (int) abs(finalStep - posCurrent)/duration);
 }
 
-void Motor::goHome() {
-    // We search the home interruptor
-    if (this->homePosSide) {
+void Motor::goOrigin() {
+    // We search the origin interruptor
+    if (this->originPosSide) {
         setPosition(360.0, 1000, false);
     }else{
         setPosition(-360.0, 1000, false);
@@ -115,7 +115,7 @@ void Motor::goHome() {
 
     // We setup the current position
     this->posCurrent = getStep(this->interruptorPosition, false);
-    setPosition(this->homePosition, 1400);
+    setPosition(this->originPosition, 1400);
 
     waitUntilMove();
 }

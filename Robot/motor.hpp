@@ -32,8 +32,8 @@ class Motor {
         float maxPosition;
         float minPosition;
 
-        bool homePosSide;
-        float homePosition;
+        bool originPosSide;
+        float originPosition;
         float interruptorPosition;
 
         // Ticker of state machine
@@ -56,7 +56,7 @@ class Motor {
     public:
 
         // Constructor
-        Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInHome, float maxPosition, float minPosition, float homePosition, float interruptorPosition, char diminution, bool motorReversed, bool homePosSide, unsigned char stepResolution = 16);
+        Motor(DigitalOut & digitalOutDirection, DigitalOut & digitalOutStep, DigitalIn & digitalInOrigin, float maxPosition, float minPosition, float originPosition, float interruptorPosition, char diminution, bool motorReversed, bool originPosSide, unsigned char stepResolution = 16);
 
         // Destructor
         ~Motor() {tickerController.detach();}
@@ -67,8 +67,8 @@ class Motor {
         void setPosition(float position, int speed = 16*25, bool withSecurity = true);
         void setPositionWithDuration(float position, float duration, bool withSecurity = true);
 
-        // Take home
-        void goHome();
+        // Take origin
+        void goOrigin();
 
         // Wait while the motor move
         void waitUntilMove();
