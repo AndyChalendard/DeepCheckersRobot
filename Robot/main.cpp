@@ -38,8 +38,6 @@ DigitalIn  motorTheta3Home(PC_0);
 
 DigitalOut magneticField(PC_1);
 
-Semaphore semaphoreSerialOrder(0);
-
 // Main
 int main() {
     float tmpFloat1, tmpFloat2, tmpFloat3;
@@ -60,7 +58,7 @@ int main() {
     Motor motorTheta3(motorTheta3Dir, motorTheta3Step, motorTheta3Home, -11, -155, -11, -11, 5, true, true);
 
     // Init of serial orders
-    SerialOrder serialOrder(serial, semaphoreSerialOrder);
+    SerialOrder serialOrder(serial);
     
     // Waiting for button
     serial.printf("Waiting user...\r\n");

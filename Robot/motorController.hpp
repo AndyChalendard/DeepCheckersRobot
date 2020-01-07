@@ -67,7 +67,7 @@ class MotorController {
         void go(float posX, float posY, float posZ);
 
         // request to go to the pause position
-        void goPausePosition(bool withControlledTrajectory = false);
+        void goPausePosition(bool withControlledTrajectory = true);
 };
 
 #endif // __MOTOR_CONTROLLER_HPP__

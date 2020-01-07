@@ -1,6 +1,6 @@
 #include "serialOrder.hpp"
 
-SerialOrder::SerialOrder(RawSerial & serial, Semaphore & sem) {
+SerialOrder::SerialOrder(RawSerial & serial) {
     this->serial = &serial;
 
     receiveState = ReceiveState::init;

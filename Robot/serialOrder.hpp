@@ -25,7 +25,7 @@ class RequestMagnetic {
             return res;
         }
 
-        void getPos(bool & state) {
+        void getState(bool & state) {
             semRequest.acquire();
             state = this->state;
         }
@@ -110,7 +110,7 @@ class SerialOrder {
         void requestStore();
     public:
         // Constructor
-        SerialOrder(RawSerial & serial, Semaphore & sem);
+        SerialOrder(RawSerial & serial);
 
         // Destructor
         ~SerialOrder() {}
