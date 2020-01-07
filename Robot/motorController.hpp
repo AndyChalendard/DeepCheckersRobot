@@ -10,8 +10,6 @@
 
 class MotorController {
     private:
-        RawSerial * serial;
-
         // Ticker for the controller
         Ticker tickerMove;
 
@@ -49,12 +47,11 @@ class MotorController {
 
     public:
         // Constructor
-        MotorController(RawSerial & serial, Motor & motorTheta1, Motor & motorTheta2, Motor & motorTheta3) : motorTheta1(&motorTheta1), motorTheta2(&motorTheta2), motorTheta3(&motorTheta3) {
+        MotorController(Motor & motorTheta1, Motor & motorTheta2, Motor & motorTheta3) : motorTheta1(&motorTheta1), motorTheta2(&motorTheta2), motorTheta3(&motorTheta3) {
             motorTheta2.goOrigin();
             motorTheta3.goOrigin();
             motorTheta1.goOrigin();
 
-            this->serial = &serial;
             goPausePosition(false);
 
             motorAngleSended.release();

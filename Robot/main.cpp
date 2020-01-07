@@ -42,12 +42,13 @@ Semaphore semaphoreSerialOrder(0);
 
 // Main
 int main() {
+    float tmpFloat1, tmpFloat2, tmpFloat3;
+
     serial.printf("Starting...\r\n");
 
+    threadBlinkLed.start(callback(callBackBlink, &led1));
+
     serial.printf("Initialization of variables...\r\n");
-    
-    // Initialisation of led
-    led1 = 1;
 
     // Init of magnetic hand
     magneticField = 0;
@@ -68,20 +69,18 @@ int main() {
 
     // We load the motor controller
     serial.printf("Moving to origin and to pause position...\r\n");
-    MotorController motorController(serial, motorTheta1, motorTheta2, motorTheta3);
-
-    // Waiting for button
-    serial.printf("Waiting user...\r\n");
-    while (btn != 0) {
-        ThisThread::sleep_for(50);
-    }
-
-    motorController.go(0, 300, 100);
-
-    threadBlinkLed.start(callback(callBackBlink, &led1));
+    MotorController motorController(motorTheta1, motorTheta2, motorTheta3);
 
     serial.printf("____loop____\r\n");
     while(1) {
-        sleep();
+        if (serialOrder.requestPosition.getPosTry(tmpFloat1, tmpFloat2, tmpFloat3)) {
+            serial.printf("I go to the position: %f %f %f\r\n", tmpFloat1, tmpFloat2, tmpFloat3);
+            motorController.go(tmpFloat1, tmpFloat2, tmpFloat3);
+
+            motorController.waitUntilMove();
+            serial.printf("#MOVE_OK;");
+        }
+
+        ThisThread::sleep_for(100);
     }
 }
