@@ -3,9 +3,40 @@
 
 #include "mbed.h"
 
+class RequestMagnetic {
+    private:
+        Semaphore semRequest;
+
+        // Value of the request
+        bool state;
+
+    public:
+        // Constructor
+        RequestMagnetic() : state(false) {};
+
+        // Getters
+        bool getStateTry(bool & state) {
+            bool res = semRequest.try_acquire();
+
+            if (res) {
+                state = this->state;
+            }
+
+            return res;
+        }
+
+        void getPos(bool & state) {
+            semRequest.acquire();
+            state = this->state;
+        }
+
+        // Setters
+        void setState(bool state) {this->state = state; semRequest.release();}
+};
+
 class RequestPosition {
     private:
-        Semaphore * semRequest;
+        Semaphore semRequest;
 
         // Value of the request
         float x;
@@ -15,14 +46,11 @@ class RequestPosition {
     public:
         // Constructor
         // We take an empty semaphore
-        RequestPosition() {};
-        RequestPosition(Semaphore & sem) : semRequest(&sem), x(0), y(0), z(0) {};
-
-        RequestPosition & operator= (const RequestPosition & req) {semRequest = req.semRequest; x=req.x; y=req.y; z=req.z; return *this;}
+        RequestPosition() : x(0), y(0), z(0) {};
 
         // Getters
         bool getPosTry(float & x, float & y, float & z) {
-            bool res = semRequest->try_acquire();
+            bool res = semRequest.try_acquire();
 
             if (res == true) {
                 x = this->x; y = this->y; z = this->z;
@@ -32,18 +60,18 @@ class RequestPosition {
         }
 
         void getPos(float & x, float & y, float & z) {
-            semRequest->acquire();
+            semRequest.acquire();
             x = this->x; y = this->y; z = this->z;
         }
 
         // Setters
         // We assure that the request are not ready until his validation
-        void setX(float x) {this->x = x; semRequest->try_acquire();}
-        void setY(float y) {this->y = y; semRequest->try_acquire();}
-        void setZ(float z) {this->z = z; semRequest->try_acquire();}
+        void setX(float x) {this->x = x; semRequest.try_acquire();}
+        void setY(float y) {this->y = y; semRequest.try_acquire();}
+        void setZ(float z) {this->z = z; semRequest.try_acquire();}
 
         // Put the order ready
-        void ready() {semRequest->try_acquire(); semRequest->release();}
+        void ready() {semRequest.try_acquire(); semRequest.release();}
 };
 
 
@@ -89,6 +117,7 @@ class SerialOrder {
 
         // Orders
         RequestPosition requestPosition;
+        RequestMagnetic requestMagnetic;
 };
 
 #endif // __SERIAL_ORDER_HPP__

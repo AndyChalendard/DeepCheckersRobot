@@ -43,6 +43,7 @@ Semaphore semaphoreSerialOrder(0);
 // Main
 int main() {
     float tmpFloat1, tmpFloat2, tmpFloat3;
+    bool tmpBool;
 
     serial.printf("Starting...\r\n");
 
@@ -78,7 +79,12 @@ int main() {
             motorController.go(tmpFloat1, tmpFloat2, tmpFloat3);
 
             motorController.waitUntilMove();
-            serial.printf("#MOVE_OK;");
+            serial.printf("#POS_OK;\n\r");
+        }
+
+        if (serialOrder.requestMagnetic.getStateTry(tmpBool)) {
+            magneticField = tmpBool;
+            serial.printf("#MAG_OK;\n\r");
         }
 
         ThisThread::sleep_for(100);

@@ -3,8 +3,6 @@
 SerialOrder::SerialOrder(RawSerial & serial, Semaphore & sem) {
     this->serial = &serial;
 
-    requestPosition = RequestPosition(sem);
-
     receiveState = ReceiveState::init;
 
     serial.attach(callback(serialReceiveExe, this), Serial::RxIrq);
@@ -41,6 +39,13 @@ void SerialOrder::requestStore() {
     if (strcmp(commande, "POS_GO") == 0) {
         requestPosition.ready();
         serial->printf("Request: %s is launch !\n\r", commande);
+    }
+    if (strcmp(commande, "MAGNET") == 0) {
+        requestMagnetic.setState(value > 0.5f);
+        serial->printf("Request: %s is launch with state: %i !\n\r", commande, value > 0.5f);
+    }
+    if (strcmp(commande, "PING") == 0) {
+        serial->printf("#PONG;\n\r");
     }
 
     commandeNbChar = 0;
