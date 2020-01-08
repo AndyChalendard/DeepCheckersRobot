@@ -309,13 +309,20 @@ class Game:
                 movements.append(elt[1:])
         return movements
 
+
+    def getFinalMovement(self, validMovements):
+        finalMovement = []
+        for elt in validMovements:
+            finalMovement.append(elt[len(elt)-1])
+        return finalMovement
+
     
 
 
 
 if __name__ == "__main__":
     g=Game()
-    g.getBoard().display()
+    #g.getBoard().display()
     #print(b.getSquare(2,2))
 
     p = pl.Player(pl.Player.RED,pl.PlayerType.HUMAN_TERMINAL)

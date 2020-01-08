@@ -6,12 +6,16 @@ import random
 if __name__ == "__main__":
     game = ga.Game()
 
-    players = [pl.Player(pl.Player.RED,pl.PlayerType.IA),pl.Player(pl.Player.BLUE,pl.PlayerType.IA)]
+    players = [pl.Player(pl.Player.RED,pl.PlayerType.RANDOM),pl.Player(pl.Player.BLUE,pl.PlayerType.IA)]
     party = 0
+
+    redWins = 0
+    blueWins = 0
 
     print("********************************************")
     print("New Game")
     print("********************************************")
+    reward = 0
     while (party < 500):
         party= party + 1
         jumpedPawnsPrev = 0
@@ -23,20 +27,23 @@ if __name__ == "__main__":
             if (currentPlayer.needDisplay() == True):
                 game.getBoard(currentPlayer.getColor()).display()
             
+            
             availableMovements = game.getAvailableMovementForAllPawns(currentPlayer.getColor())
             validPawns = game.pawnsCanBePlayed(availableMovements)
             x,y=currentPlayer.getPawnWanted(validPawns,game.getBoard(currentPlayer.getColor()))
-            print("WANTS : " +str((x,y)) )
-
             movementsValid = game.movementsValid((x,y),availableMovements)
-            xmov,ymov = currentPlayer.getMovementWanted(movementsValid, game.getBoard(currentPlayer.getColor()))
+            finalMovement = game.getFinalMovement(movementsValid)
+            currentPlayer.setReward(reward, game.getBoard(currentPlayer.getColor()), validPawns, finalMovement) #we calculate the rewards of the previous movement
+
             
+            xmov,ymov = currentPlayer.getMovementWanted(finalMovement, game.getBoard(currentPlayer.getColor()))
             
+            '''
             if (currentPlayer.getColor() == pl.Player.RED):
                 print("RED move " +str((x,y)) + " to " + str((xmov,ymov)))
             else:
                 print("BLUE move " +str((x,y)) + " to " + str((xmov,ymov)))
-            
+            '''
             for mvt in movementsValid:
                 if (mvt[len(mvt) - 1] == (xmov,ymov)):
                     movement = mvt
@@ -44,20 +51,25 @@ if __name__ == "__main__":
             jumpedPawns=game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
             reward = len(jumpedPawns) - jumpedPawnsPrev
             jumpedPawnsPrev = len(jumpedPawns)
-            currentPlayer.setReward(reward, game.getBoard(currentPlayer.getColor()), validPawns)
-
+            '''
             if (len(jumpedPawns) > 0):
                 if (currentPlayer.getColor() == pl.Player.RED):
                     print("Player RED jumped " +str(jumpedPawns))
                 else:
                     print("Player BLUE jumped " +str(jumpedPawns))
-
+            '''
             currentPlayerId =(currentPlayerId +1) % 2
 
         
         print("-------------------Game finish------------------")
+        if (currentPlayer.getColor() == pl.Player.RED):
+            redWins+=1
+        else:
+            blueWins+=1
         game.getBoard(0).display()
         print("------------------------------------------------")
+        print(" ********  Statistiques ******* ")
+        print("The red player wins " + str(redWins) + " parties and the blue player wins " +str(blueWins) + " parties")
 
         if (currentPlayer.getColor() == pl.Player.RED):
             print("-----------RED wins !!-----------")

@@ -47,7 +47,7 @@ class Player:
         elif(self._type == PlayerType.RANDOM):
             pawn = random.randint(0, len(validPawns)-1)
             xPawn,yPawn = validPawns[pawn]
-            print("Player choose the pawn: " + str((xPawn,yPawn)))
+            #print("Player choose the pawn: " + str((xPawn,yPawn)))
         elif(self._type == PlayerType.IA):
             tmpBoard = board.copy()
             if (self._color == self.BLUE):
@@ -55,13 +55,10 @@ class Player:
             xPawn,yPawn = self._IA.getPawnWanted(tmpBoard, validPawns)
         return xPawn, yPawn
 
-    def getMovementWanted(self,validMovements, board):
+    def getMovementWanted(self,finalMovement, board):
         """
         Get the movement that the player wants to do
         """
-        finalMovement = []
-        for elt in validMovements:
-            finalMovement.append(elt[len(elt)-1])
         xMov = -1
         yMov = -1
         if (self._type == PlayerType.HUMAN_TERMINAL) :
@@ -74,20 +71,21 @@ class Player:
         elif(self._type == PlayerType.RANDOM):
             mov = random.randint(0, len(finalMovement)-1)
             xMov,yMov = finalMovement[mov]
-            print("and move to " + str((xMov,yMov)))
+            #print("and move to " + str((xMov,yMov)))
         elif(self._type == PlayerType.IA):
-            tmpBoard = board.copy()
             if (self._color == self.BLUE):
                 tmpBoard = board.reverseColor()
+            else:
+                tmpBoard = board.copy()
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         return xMov, yMov
 
-    def setReward(self, reward, board, availablePawn):
+    def setReward(self, reward, board, availablePawn, finalMovement):
         if (self._type == PlayerType.IA):
             tmpBoard = board.copy()
             if (self._color == self.BLUE):
                 tmpBoard = board.reverseColor()
-            self._IA.learn(reward, availablePawn, tmpBoard)
+            self._IA.learn(reward, availablePawn, tmpBoard, finalMovement)
 
     def saveModel(self):
         if (self._type == PlayerType.IA):

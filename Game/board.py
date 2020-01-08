@@ -9,8 +9,8 @@ class Pawns:
     NULL = 0
     RED_KING = 1
     RED = 2
-    BLUE_KING = 3
-    BLUE = 4
+    BLUE_KING = -1
+    BLUE = -2
 
     @staticmethod
     def display(id):
@@ -39,19 +39,7 @@ class Board:
     
     def reverseColor(self):
         bd = Board()
-        for i in range(self.SIZE_Y):
-            for j in range(self.SIZE_X//2):
-                square = self._board[i][j]
-                if (square == Pawns.BLUE):
-                    bd._board[i][j] == Pawns.RED
-                elif (square == Pawns.RED):
-                    bd._board[i][j] == Pawns.BLUE
-                elif (square == Pawns.BLUE_KING):
-                    bd._board[i][j] == Pawns.RED_KING
-                elif (square == Pawns.RED_KING):
-                    bd._board[i][j] == Pawns.BLUE_KING
-                else:
-                    bd._board[i][j] == Pawns.NULL
+        bd._board = self._board * (-1)
         return bd
 
 

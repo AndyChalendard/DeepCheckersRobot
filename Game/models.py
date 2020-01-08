@@ -31,7 +31,7 @@ class CheckersModel :
             _nomModel = 'simple_pawn_movement'
 
         self._pathModel = '../Models/model_'+_nomModel+'.h5'
-        if (0) : #os.path.exists(self._pathModel): #load the model
+        if (0) : #os.path.exists(self._pathModel): #load the model TODO
             self._model = tensorflow.keras.models.load_model(self._pathModel)
         else: #create the model
             self._model = Sequential()
@@ -92,48 +92,101 @@ class IA :
         self._prevMove = None
         self._OldQ = 1
         self._pawnSelectorModel = CheckersModel(Mod.PAWN_SELECTOR, sizeX,sizeY)
-        #self._kingMovementModel = CheckersModel(CheckersModel.PAWN_SELECTOR, board) TODO
-        #self._simplePawnMovementModel = CheckersModel(CheckersModel.PAWN_SELECTOR, board) TODO
+        self._kingMovementModel = CheckersModel(Mod.KING_MOVEMENT, sizeX,sizeY) 
+        self._simplePawnMovementModel = CheckersModel(Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY) 
+
+        self._xPawnWanted = None
+        self._yPawnWanted = None
+        self._xPawnWantedPrec = None
+        self._yPawnWantedPrec = None
 
     def getPawnWanted(self, board, availablePawn):
-        self._prevBoard = board.copy()
+        self._xPawnWantedPrec = self._xPawnWanted
+        self._yPawnWantedPrec = self._yPawnWanted
         if (random.random() < self._epsilon):
-            xPawnWanted, yPawnWanted = random.choice(availablePawn) #exploration
+            self._xPawnWanted, self._yPawnWanted = random.choice(availablePawn) #exploration
         else: #exploitation
             output = self._pawnSelectorModel.predictModel(board.getBoard()) #use the model
             max = -1
-            xPawnWanted = -1
-            yPawnWanted = -1
+            self._xPawnWanted = -1
+            self._yPawnWanted = -1
             for pawn in availablePawn:
                 xPawn = pawn[0]//2 
                 yPawn = pawn[1]
                 index = xPawn*4 + yPawn
                 if (max < output[0][index]):
                     max = output[0][index]
-                    xPawnWanted = pawn[0]
-                    yPawnWanted = pawn[1]
-        return xPawnWanted, yPawnWanted
+                    self._xPawnWanted = pawn[0]
+                    self._yPawnWanted = pawn[1]
+        
+        return self._xPawnWanted, self._yPawnWanted
 
-    def learn(self, reward, availablePawn, board):
+    def learn(self, reward, availablePawn, board, finalMovement):
         if self._prevBoard:
-            prevQ = self._pawnSelectorModel.predictModel(self._prevBoard.getBoard())
-            newQ = self._pawnSelectorModel.predictModel(board.getBoard())
-            maxNewQ = -1
+            #Learn for pawnSelector
+            prevQPawnSelect = self._pawnSelectorModel.predictModel(self._prevBoard.getBoard())
+            newQPawnSelect = self._pawnSelectorModel.predictModel(board.getBoard())
+            maxNewQPawnSelect = -1
             for pawn in availablePawn:
                 xPawn = pawn[0]//2
                 yPawn = pawn[1]
                 index = xPawn*4 + yPawn
-                if (maxNewQ < newQ[0][index]):
-                    maxNewQ = newQ[0][index]
-            self._pawnSelectorModel.trainModel(board.getBoard(),prevQ + self._alpha *((reward + self._gamma * maxNewQ)-prevQ))
+                if (maxNewQPawnSelect < newQPawnSelect[0][index]):
+                    maxNewQPawnSelect = newQPawnSelect[0][index]
+            self._pawnSelectorModel.trainModel(board.getBoard(),prevQPawnSelect + self._alpha *((reward + self._gamma * maxNewQPawnSelect)-prevQPawnSelect))
+
+            #Learn for KingMovements
+            if (self._prevBoard.getSquare(self._xPawnWantedPrec,self._yPawnWantedPrec) == bd.Pawns.RED_KING):
+                prevQKingMovements = self._kingMovementModel.predictModel(self._prevBoard.getBoard())
+                newQKingMovements = self._kingMovementModel.predictModel(board.getBoard())
+                maxNewQKingMovements = -1
+                for mov in finalMovement:
+                    xMov = mov[0]//2
+                    yMov = mov[1]
+                    index = xMov*4 + yMov
+                    if (maxNewQKingMovements < newQKingMovements[0][index]):
+                        maxNewQKingMovements = newQKingMovements[0][index]
+                self._kingMovementModel.trainModel(board.getBoard(),prevQKingMovements + self._alpha *((reward + self._gamma * maxNewQKingMovements)-prevQKingMovements))
+            
+            #Learn for SimpleMovements
+            elif (self._prevBoard.getSquare(self._xPawnWantedPrec,self._yPawnWantedPrec) == bd.Pawns.RED):
+                prevQSimpleMovements = self._simplePawnMovementModel.predictModel(self._prevBoard.getBoard())
+                newQSimpleMovements = self._simplePawnMovementModel.predictModel(board.getBoard())
+                maxNewQSimpleMovements = -1
+                for mov in finalMovement:
+                    xMov = mov[0]//2
+                    yMov = mov[1]
+                    index = xMov*4 + yMov
+                    if (maxNewQSimpleMovements < newQSimpleMovements[0][index]):
+                        maxNewQSimpleMovements = newQSimpleMovements[0][index]
+                self._kingMovementModel.trainModel(board.getBoard(),prevQSimpleMovements + self._alpha *((reward + self._gamma * maxNewQSimpleMovements)-prevQSimpleMovements))
+
         self._prevBoard = None
 
     def saveNeuralNetworks(self):
         self._pawnSelectorModel.saveModel()
-        #self._kingMovementModel.saveModel()
-        #self._simplePawnMovementModel.saveModel()
+        self._kingMovementModel.saveModel()
+        self._simplePawnMovementModel.saveModel()
 
-    def getMovementWanted(self, board, availableMovement):
-        mov = random.randint(0, len(availableMovement)-1)
-        xMovWanted,yMovWanted = availableMovement[mov]
+    def getMovementWanted(self, board, finalMovement):
+        self._prevBoard = board.copy()
+        if (random.random() < self._epsilon):
+            xMovWanted, yMovWanted = random.choice(finalMovement) #exploration
+        else: #exploitation
+            if (board.getSquare(self._xPawnWanted,self._yPawnWanted) == bd.Pawns.RED_KING):
+                output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
+            elif(board.getSquare(self._xPawnWanted,self._yPawnWanted) == bd.Pawns.RED):
+                output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
+            max = -1
+            xMovWanted = -1
+            yMovWanted = -1
+            for mov in finalMovement:
+                xMov = mov[0]//2 
+                yMov = mov[1]
+                index = xMov*4 + yMov
+                if (max < output[0][index]):
+                    max = output[0][index]
+                    xMovWanted = mov[0]
+                    yMovWanted = mov[1]
+
         return xMovWanted, yMovWanted
