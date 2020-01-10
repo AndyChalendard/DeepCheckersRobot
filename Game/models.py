@@ -3,12 +3,22 @@ import os.path
 import random
 import numpy as np
 import tensorflow
-import tensorflow.keras as tk
-from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import Adam
+
+if (str(tensorflow.__version__) == "1.8.0"): # Use for GPU training (with tensorflow 1.8)
+    import keras as tk
+    from keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
+    from keras.layers import Conv2D
+    from keras.layers import MaxPooling2D
+    from keras.models import Sequential
+    from keras.optimizers import Adam
+else: # Classic use
+    import tensorflow.keras as tk
+    from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
+    from tensorflow.keras.layers import Conv2D
+    from tensorflow.keras.layers import MaxPooling2D
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.optimizers import Adam
+
 
 class Mod:
     PAWN_SELECTOR = 0 #Selection of the pawn that we want to play with
@@ -17,9 +27,9 @@ class Mod:
 
 
 class CheckersModel :
-    def __init__ (self,idModel,sizeX,sizeY,kernelSize = (2,2),learningRate = 0.0001):
+    def __init__ (self,idModel,sizeX,sizeY,kernelSize = (5,5),learningRate = 0.0001):
         '''
-        Creation of the model or load the model 
+        Creation of the model or load the model
         '''
         self._idModel = idModel
         self._learningRate = learningRate
@@ -38,11 +48,10 @@ class CheckersModel :
             inputShape = (1, sizeY, sizeX//2)
             numOutput = sizeX//2 * sizeY
 
-            self._model.add(Conv2D(1, kernel_size=kernelSize, strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
-            self._model.add(Conv2D(32, kernel_size=kernelSize, strides = (1,1), padding='same', activation='relu',name='Conv2'))
+            self._model.add(Conv2D(64, kernel_size=kernelSize, strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
+            self._model.add(Conv2D(16, kernel_size=(3,3), strides = (1,1), padding='same', activation='relu',name='Conv2'))
             self._model.add(Flatten(name='Flatten'))
-            self._model.add(Dense(64, activation='relu',name='Dense1'))
-            self._model.add(Dense(64, activation='relu',name='Dense2'))
+            self._model.add(Dense(128, activation='relu',name='Dense1'))
             self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
             adam = Adam(lr=self._learningRate)
             self._model.compile(loss=tk.losses.categorical_crossentropy,optimizer=adam,metrics=['acc'])
@@ -56,7 +65,7 @@ class CheckersModel :
         Save the model to a futur use
         '''
         self._model.save(self._pathModel)
-    
+
     def trainModel(self, xTrain, yTrain, batchSize = 1, numEpoch = 3):
         '''
         Train the model, return the history of the epoch
@@ -65,7 +74,7 @@ class CheckersModel :
         #yTrain = np.array([[yTrain]], dtype=np.float64)
         history = self._model.fit(xTrain, yTrain, batch_size=batchSize, epochs=numEpoch, verbose=0)
         return history
-    
+
     def predictModel(self,x):
         '''
         Use the model to predict the output
@@ -92,8 +101,8 @@ class IA :
         self._prevMove = None
         self._OldQ = 1
         self._pawnSelectorModel = CheckersModel(Mod.PAWN_SELECTOR, sizeX,sizeY)
-        self._kingMovementModel = CheckersModel(Mod.KING_MOVEMENT, sizeX,sizeY) 
-        self._simplePawnMovementModel = CheckersModel(Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY) 
+        self._kingMovementModel = CheckersModel(Mod.KING_MOVEMENT, sizeX,sizeY)
+        self._simplePawnMovementModel = CheckersModel(Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
 
         self._xPawnWanted = None
         self._yPawnWanted = None
@@ -111,14 +120,14 @@ class IA :
             self._xPawnWanted = -1
             self._yPawnWanted = -1
             for pawn in availablePawn:
-                xPawn = pawn[0]//2 
+                xPawn = pawn[0]//2
                 yPawn = pawn[1]
                 index = xPawn*4 + yPawn
                 if (max < output[0][index]):
                     max = output[0][index]
                     self._xPawnWanted = pawn[0]
                     self._yPawnWanted = pawn[1]
-        
+
         return self._xPawnWanted, self._yPawnWanted
 
     def learn(self, reward, availablePawn, board, finalMovement):
@@ -147,7 +156,7 @@ class IA :
                     if (maxNewQKingMovements < newQKingMovements[0][index]):
                         maxNewQKingMovements = newQKingMovements[0][index]
                 self._kingMovementModel.trainModel(board.getBoard(),prevQKingMovements + self._alpha *((reward + self._gamma * maxNewQKingMovements)-prevQKingMovements))
-            
+
             #Learn for SimpleMovements
             elif (self._prevBoard.getSquare(self._xPawnWantedPrec,self._yPawnWantedPrec) == bd.Pawns.RED):
                 prevQSimpleMovements = self._simplePawnMovementModel.predictModel(self._prevBoard.getBoard())
@@ -181,7 +190,7 @@ class IA :
             xMovWanted = -1
             yMovWanted = -1
             for mov in finalMovement:
-                xMov = mov[0]//2 
+                xMov = mov[0]//2
                 yMov = mov[1]
                 index = xMov*4 + yMov
                 if (max < output[0][index]):

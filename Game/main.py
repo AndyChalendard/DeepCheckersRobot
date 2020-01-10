@@ -16,7 +16,7 @@ if __name__ == "__main__":
     print("New Game")
     print("********************************************")
     reward = 0
-    while (party < 500):
+    while (party < 30000):
         party= party + 1
         jumpedPawnsPrev = 0
         currentPlayerId = random.randint(0, 1)
@@ -26,8 +26,8 @@ if __name__ == "__main__":
 
             if (currentPlayer.needDisplay() == True):
                 game.getBoard(currentPlayer.getColor()).display()
-            
-            
+
+
             availableMovements = game.getAvailableMovementForAllPawns(currentPlayer.getColor())
             validPawns = game.pawnsCanBePlayed(availableMovements)
             x,y=currentPlayer.getPawnWanted(validPawns,game.getBoard(currentPlayer.getColor()))
@@ -35,9 +35,9 @@ if __name__ == "__main__":
             finalMovement = game.getFinalMovement(movementsValid)
             currentPlayer.setReward(reward, game.getBoard(currentPlayer.getColor()), validPawns, finalMovement) #we calculate the rewards of the previous movement
 
-            
+
             xmov,ymov = currentPlayer.getMovementWanted(finalMovement, game.getBoard(currentPlayer.getColor()))
-            
+
             '''
             if (currentPlayer.getColor() == pl.Player.RED):
                 print("RED move " +str((x,y)) + " to " + str((xmov,ymov)))
@@ -60,7 +60,7 @@ if __name__ == "__main__":
             '''
             currentPlayerId =(currentPlayerId +1) % 2
 
-        
+
         print("-------------------Game finish------------------")
         if (currentPlayer.getColor() == pl.Player.RED):
             redWins+=1
@@ -78,14 +78,3 @@ if __name__ == "__main__":
         game.reset()
     players[0].saveModel()
     players[1].saveModel()
-
-
-
-
-
-
-            
-
-
-
-

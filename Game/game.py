@@ -7,7 +7,6 @@ class Game:
     def __init__(self):
         self._board = bd.Board()
 
-    
     def getBoard(self, color):
         if (color == pl.Player.RED):
             return self._board.copy()
@@ -23,7 +22,7 @@ class Game:
 
         red_pawns = [bd.Pawns.RED, bd.Pawns.RED_KING]
         blue_pawns = [bd.Pawns.BLUE_KING, bd.Pawns.BLUE]
-        
+
         availableMovRed = self.getAvailableMovementForAllPawns(pl.Player.RED)
         availableMovBlue = self.getAvailableMovementForAllPawns(pl.Player.BLUE)
         if (len(availableMovRed) == 0 or len(availableMovBlue) == 0): #there are only one pawn but it can't be played
@@ -83,7 +82,7 @@ class Game:
             else:
                 ydir = 1
             prec = (prec[0] + xdir,prec[1] + ydir)
-            
+
             while (prec != elt):
                 if(self._board.getSquare(prec[0],prec[1]) != bd.Pawns.NULL):
                     self._board.setSquare(prec[0],prec[1],bd.Pawns.NULL) #there are no opponent pawns here now
@@ -137,7 +136,7 @@ class Game:
         else:
             pawnOpponent = [bd.Pawns.RED_KING, bd.Pawns.RED]
             myPawn = bd.Pawns.BLUE
-        
+
         mouvementAvailable = False
 
         for i in [-1,1]: #check all positions arround the square
@@ -158,7 +157,7 @@ class Game:
                             tmpPath.append((x+i*d,y+j*d))
 
                             self._checkKingPawnsMovement(x+i*d, y+j*d, color, tmpBoard, paths, tmpPath)
-                            d+=1                           
+                            d+=1
                 except bd.SquareNotValid:
                     pass
 
@@ -168,9 +167,9 @@ class Game:
 
     def _getAvailablePathMovement(self,square,playerColor):
         '''
-            Return a boolean oblogatory which determine if we have an obligatory movement to do 
+            Return a boolean oblogatory which determine if we have an obligatory movement to do
              a list of different square which if the steps to arrive in an available movement
-             - the first tuple in this list is the square 
+             - the first tuple in this list is the square
              [[(square),(step1),(step2)],[(square),(step)]]
         '''
         x = square[0]
@@ -179,7 +178,7 @@ class Game:
         obligatory = True #we have an obligatory movement
         paths = []
         if (color == bd.Pawns.NULL) : #square empty
-            raise bd.PawnsException("The square (" + str(x) +"," +str(y) +") don't have any Pawns here") 
+            raise bd.PawnsException("The square (" + str(x) +"," +str(y) +") don't have any Pawns here")
         else :
             if (playerColor == pl.Player.RED):
                 if (color == bd.Pawns.BLUE or color ==bd.Pawns.BLUE_KING): #not using his pawn
@@ -187,7 +186,7 @@ class Game:
             else :
                 if (color == bd.Pawns.RED or color == bd.Pawns.RED_KING): #not using his pawn
                     raise bd.PawnsException("It is not your pawn !")
-            
+
             if (color == bd.Pawns.BLUE or color == bd.Pawns.RED): #for simple pawn
 
                 self._checkSimplePawnsMovement(x,y,playerColor,self._board,paths)
@@ -195,10 +194,10 @@ class Game:
                 if (len(paths) == 0): #we have an obligatory movement
                     obligatory = False
                     if (playerColor == pl.Player.BLUE):
-                        j=1 #the simple pawn can only go ahead 
+                        j=1 #the simple pawn can only go ahead
                     else:
-                        j=-1#the simple pawn can only go ahead 
-                    
+                        j=-1#the simple pawn can only go ahead
+
                     for i in [-1,1]:
                         try: #if the square wanted is in the board
                             if (self._board.getSquare(x+i,y+j) == bd.Pawns.NULL):
@@ -206,7 +205,7 @@ class Game:
                         except bd.SquareNotValid:
                             pass
 
-            else: #for kings 
+            else: #for kings
                 self._checkKingPawnsMovement(x,y,playerColor,self._board,paths)
                 if (len(paths) == 0): #we have an obligatory movement
                     obligatory = False
@@ -232,11 +231,11 @@ class Game:
                 if (len(paths[i]) == max):
                     newPath.append(paths[i])
             paths=newPath
-        
+
         for i in range(len(paths)):
             paths[i].insert(0,square)
 
-        return obligatory,paths 
+        return obligatory,paths
 
     def getAvailableMovementForAllPawns(self,playerColor):
         '''
@@ -254,23 +253,23 @@ class Game:
                 try:
                     if (self._board.getSquare(x,y) in myPawn):
                         obligatory,movementPawn = self._getAvailablePathMovement((x,y),playerColor)
-                        
+
                         if (obligatory==True and obligatoryMovementFounded==False):#there are one obligatory movement
                             obligatoryMovementFounded = True
                             movements=[]
-                        
+
                         if (obligatory == obligatoryMovementFounded):
                             for i in range(len(movementPawn)):
                                 movements.append(movementPawn[i])
 
                 except bd.SquareNotValid:
                     pass
-        
+
         max = 0
         for i in range(len(movements)):
             if (max<len(movements[i])):
                 max = len(movements[i])
-        
+
         newMov = []
         for i in range(len(movements)):
             if (max == len(movements[i])):
@@ -316,7 +315,7 @@ class Game:
             finalMovement.append(elt[len(elt)-1])
         return finalMovement
 
-    
+
 
 
 
@@ -330,15 +329,15 @@ if __name__ == "__main__":
     #g.getAvailablePathMovement((0,5),p) #square not valid
     #print(g.getAvailablePathMovement((0,6),p)) #nothing there is always a pawn in (1,5)
     #print(g.getAvailablePathMovement((1,5),p))
-    #print(g.getAvailablePathMovement((7,5),p)) 
+    #print(g.getAvailablePathMovement((7,5),p))
 
     p = pl.Player(pl.Player.BLUE,pl.PlayerType.HUMAN_TERMINAL) #blue
     #print(g.getAvailablePathMovement((0,0),p)) #nothing there is always a pawn in (1,5)
-    #print(g.getAvailablePathMovement((2,2),p)) 
-    #print(g.getAvailablePathMovement((0,2),p)) 
+    #print(g.getAvailablePathMovement((2,2),p))
+    #print(g.getAvailablePathMovement((0,2),p))
     g._board.setSquare(1,3,bd.Pawns.RED)
     g._board.display()
-    print(g._getAvailablePathMovement((2,2),p)) 
+    print(g._getAvailablePathMovement((2,2),p))
 
     g._board.setSquare(2,6,bd.Pawns.NULL)
     g._board.display()
@@ -348,7 +347,7 @@ if __name__ == "__main__":
     g._board.reset()
     g._board.setSquare(2,4,bd.Pawns.BLUE)
     g._board.display()
-    print(g._getAvailablePathMovement((3,5),p)) 
+    print(g._getAvailablePathMovement((3,5),p))
 
     g._board.setSquare(3,1,bd.Pawns.NULL)
     g._board.display()
@@ -389,10 +388,3 @@ if __name__ == "__main__":
     g3._board.setSquare(5,1,bd.Pawns.BLUE)
     g3._board.display()
     print(g3.isFinished())
-
-
-
-
-
-
-
