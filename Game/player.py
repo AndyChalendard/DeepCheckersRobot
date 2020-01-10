@@ -80,16 +80,17 @@ class Player:
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         return xMov, yMov
 
-    def setReward(self, reward, board, availablePawn, finalMovement):
+    def setReward(self, reward, availablePawn, finalMovement):
         if (self._type == PlayerType.IA):
-            tmpBoard = board.copy()
-            if (self._color == self.BLUE):
-                tmpBoard = board.reverseColor()
-            self._IA.learn(reward, availablePawn, tmpBoard, finalMovement)
+            self._IA.learn(reward, availablePawn, finalMovement)
 
     def saveModel(self):
         if (self._type == PlayerType.IA):
             self._IA.saveNeuralNetworks()
+    
+    def reset(self):
+        if (self._type == PlayerType.IA):
+            self._IA.resetIA()
 
 if __name__ == "__main__": #tests
     p1 = Player(Player.RED,True)
