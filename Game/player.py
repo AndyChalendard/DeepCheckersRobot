@@ -9,7 +9,7 @@ class Player:
     RED = 0
     BLUE = 1
 
-    def __init__(self,color,playerType): 
+    def __init__(self,color,playerType):
         self._color = color
         self._type = playerType
         if (self._type == PlayerType.IA):
@@ -80,14 +80,14 @@ class Player:
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         return xMov, yMov
 
-    def setReward(self, reward, availablePawn, finalMovement):
+    def setReward(self, reward):
         if (self._type == PlayerType.IA):
-            self._IA.learn(reward, availablePawn, finalMovement)
+            self._IA.learn(reward)
 
     def saveModel(self):
         if (self._type == PlayerType.IA):
             self._IA.saveNeuralNetworks()
-    
+
     def reset(self):
         if (self._type == PlayerType.IA):
             self._IA.resetIA()

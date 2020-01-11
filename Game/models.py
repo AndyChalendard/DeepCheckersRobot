@@ -99,87 +99,84 @@ class IA :
 
         self._prevBoard = None
         self._prevPrevBoard = None
-        self._prevMove = None
+        self._prevAvailablePawn = None
+        self._prevPrevAvailablePawn = None
+        self._prevFinalMovement = None
+        self._prevPrevFinalMovement = None
         self._pawnSelectorModel = CheckersModel(Mod.PAWN_SELECTOR, sizeX,sizeY)
         self._kingMovementModel = CheckersModel(Mod.KING_MOVEMENT, sizeX,sizeY)
         self._simplePawnMovementModel = CheckersModel(Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
 
-        self._xPawnWanted = None
-        self._yPawnWanted = None
-        self._xPawnWantedPrec = None
-        self._yPawnWantedPrec = None
+        self._prevXPawnWanted = None
+        self._prevYPawnWanted = None
+        self._prevPrevXPawnWanted = None
+        self._prevPrevYPawnWanted = None
 
     def resetIA(self):
         self._prevBoard = None
         self._prevPrevBoard = None
-        self._prevMove = None
-        self._xPawnWanted = None
-        self._yPawnWanted = None
-        self._xPawnWantedPrec = None
-        self._yPawnWantedPrec = None
+        self._prevAvailablePawn = None
+        self._prevPrevAvailablePawn = None
+        self._prevFinalMovement = None
+        self._prevPrevFinalMovement = None
+
+        self._prevXPawnWanted = None
+        self._prevYPawnWanted = None
+        self._prevPrevXPawnWanted = None
+        self._prevPrevYPawnWanted = None
 
     def getPawnWanted(self, board, availablePawn):
-        self._xPawnWantedPrec = self._xPawnWanted
-        self._yPawnWantedPrec = self._yPawnWanted
+        self._prevPrevAvailablePawn = self._prevAvailablePawn
+        self._prevAvailablePawn = availablePawn
+
+        self._prevPrevXPawnWanted = self._prevXPawnWanted
+        self._prevPrevYPawnWanted = self._prevYPawnWanted
         if (random.random() < self._epsilon):
-            self._xPawnWanted, self._yPawnWanted = random.choice(availablePawn) #exploration
+            self._prevXPawnWanted, self._prevYPawnWanted = random.choice(availablePawn) #exploration
         else: #exploitation
             output = self._pawnSelectorModel.predictModel(board.getBoard()) #use the model
             max = -1
-            self._xPawnWanted = -1
-            self._yPawnWanted = -1
+            self._prevXPawnWanted = -1
+            self._prevYPawnWanted = -1
             for pawn in availablePawn:
                 xPawn = pawn[0]//2
                 yPawn = pawn[1]
                 index = xPawn*4 + yPawn
                 if (max < output[0][index]):
                     max = output[0][index]
-                    self._xPawnWanted = pawn[0]
-                    self._yPawnWanted = pawn[1]
+                    self._prevXPawnWanted = pawn[0]
+                    self._prevYPawnWanted = pawn[1]
 
-        return self._xPawnWanted, self._yPawnWanted
+        return self._prevXPawnWanted, self._prevYPawnWanted
 
-    def learn(self, reward, availablePawn, finalMovement):
-        if self._prevPrevBoard:
+    def _learnModel(self, modelToLearn, prevPrevSolutions, reward):
+        prevQ = modelToLearn.predictModel(self._prevPrevBoard.getBoard())
+        newQ = modelToLearn.predictModel(self._prevBoard.getBoard())
+        maxNewQ = -1
+        for solution in prevPrevSolutions:
+            x = solution[0]//2
+            y = solution[1]
+            index = x*self._prevBoard.SIZE_X//2 + y
+            if (maxNewQ < newQ[0][index]):
+                maxNewQ = newQ[0][index]
+        modelToLearn.trainModel(self._prevPrevBoard.getBoard(),prevQ + self._alpha *((reward + self._gamma * maxNewQ)-prevQ))
+
+    def learn(self, reward):
+        if self._prevPrevBoard and self._prevPrevAvailablePawn and self._prevPrevFinalMovement:
             #Learn for pawnSelector
-            prevQPawnSelect = self._pawnSelectorModel.predictModel(self._prevPrevBoard.getBoard())
-            newQPawnSelect = self._pawnSelectorModel.predictModel(self._prevBoard.getBoard())
-            maxNewQPawnSelect = -1
-            for pawn in availablePawn:
-                xPawn = pawn[0]//2
-                yPawn = pawn[1]
-                index = xPawn*4 + yPawn
-                if (maxNewQPawnSelect < newQPawnSelect[0][index]):
-                    maxNewQPawnSelect = newQPawnSelect[0][index]
-            self._pawnSelectorModel.trainModel(self._prevBoard.getBoard(),prevQPawnSelect + self._alpha *((reward + self._gamma * maxNewQPawnSelect)-prevQPawnSelect))
+            self._learnModel(self._pawnSelectorModel, self._prevPrevAvailablePawn, reward)
 
             #Learn for KingMovements
-            if (self._prevPrevBoard.getSquare(self._xPawnWantedPrec,self._yPawnWantedPrec) == bd.Pawns.RED_KING):
-                prevQKingMovements = self._kingMovementModel.predictModel(self._prevPrevBoard.getBoard())
-                newQKingMovements = self._kingMovementModel.predictModel(self._prevBoard.getBoard())
-                maxNewQKingMovements = -1
-                for mov in finalMovement:
-                    xMov = mov[0]//2
-                    yMov = mov[1]
-                    index = xMov*4 + yMov
-                    if (maxNewQKingMovements < newQKingMovements[0][index]):
-                        maxNewQKingMovements = newQKingMovements[0][index]
-                self._kingMovementModel.trainModel(self._prevBoard.getBoard(),prevQKingMovements + self._alpha *((reward + self._gamma * maxNewQKingMovements)-prevQKingMovements))
+            if (self._prevPrevBoard.getSquare(self._prevPrevXPawnWanted,self._prevPrevYPawnWanted) == bd.Pawns.RED_KING):
+                self._learnModel(self._kingMovementModel, self._prevPrevFinalMovement, reward)
 
             #Learn for SimpleMovements
-            elif (self._prevPrevBoard.getSquare(self._xPawnWantedPrec,self._yPawnWantedPrec) == bd.Pawns.RED):
-                prevQSimpleMovements = self._simplePawnMovementModel.predictModel(self._prevPrevBoard.getBoard())
-                newQSimpleMovements = self._simplePawnMovementModel.predictModel(self._prevBoard.getBoard())
-                maxNewQSimpleMovements = -1
-                for mov in finalMovement:
-                    xMov = mov[0]//2
-                    yMov = mov[1]
-                    index = xMov*4 + yMov
-                    if (maxNewQSimpleMovements < newQSimpleMovements[0][index]):
-                        maxNewQSimpleMovements = newQSimpleMovements[0][index]
-                self._kingMovementModel.trainModel(self._prevBoard.getBoard(),prevQSimpleMovements + self._alpha *((reward + self._gamma * maxNewQSimpleMovements)-prevQSimpleMovements))
+            elif (self._prevPrevBoard.getSquare(self._prevPrevXPawnWanted,self._prevPrevYPawnWanted) == bd.Pawns.RED):
+                self._learnModel(self._simplePawnMovementModel, self._prevPrevFinalMovement, reward)
 
         self._prevPrevBoard = None
+        self._prevPrevAvailablePawn = None
+        self._prevPrevFinalMovement = None
 
     def saveNeuralNetworks(self):
         self._pawnSelectorModel.saveModel()
@@ -187,14 +184,17 @@ class IA :
         self._simplePawnMovementModel.saveModel()
 
     def getMovementWanted(self, board, finalMovement):
+        self._prevPrevFinalMovement = self._prevFinalMovement
+        self._prevFinalMovement = finalMovement
+
         self._prevPrevBoard = self._prevBoard
         self._prevBoard = board.copy()
         if (random.random() < self._epsilon):
             xMovWanted, yMovWanted = random.choice(finalMovement) #exploration
         else: #exploitation
-            if (board.getSquare(self._xPawnWanted,self._yPawnWanted) == bd.Pawns.RED_KING):
+            if (board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED_KING):
                 output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
-            elif(board.getSquare(self._xPawnWanted,self._yPawnWanted) == bd.Pawns.RED):
+            elif(board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED):
                 output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
             max = -1
             xMovWanted = -1

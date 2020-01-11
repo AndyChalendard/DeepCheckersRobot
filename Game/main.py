@@ -50,7 +50,9 @@ if __name__ == "__main__":
             jumpedPawns=game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
             reward = len(jumpedPawns) - jumpedPawnsPrev
             jumpedPawnsPrev = len(jumpedPawns)
-            currentPlayer.setReward(reward, validPawns, finalMovement) #we calculate the rewards of the previous movement
+
+            currentPlayer.setReward(reward) #we calculate the rewards of the previous movement
+
             '''
             if (len(jumpedPawns) > 0):
                 if (currentPlayer.getColor() == pl.Player.RED):
@@ -78,6 +80,6 @@ if __name__ == "__main__":
         game.reset()
         players[0].reset()
         players[1].reset()
-        
+
     players[0].saveModel()
     players[1].saveModel()
