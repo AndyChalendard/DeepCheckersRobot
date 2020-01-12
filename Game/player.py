@@ -9,11 +9,11 @@ class Player:
     RED = 0
     BLUE = 1
 
-    def __init__(self,color,playerType):
+    def __init__(self,color,playerType,sizeX=None,sizeY=None,pawnSelectorModel=None, kingMovementModel=None, simplePawnModel=None):
         self._color = color
         self._type = playerType
-        if (self._type == PlayerType.IA):
-            self._IA = mod.IA(8,8) #sizeX sizeY
+        if (self._type == PlayerType.IA and sizeX and sizeY and pawnSelectorModel and kingMovementModel and simplePawnModel):
+            self._IA = mod.IA(sizeX,sizeY,pawnSelectorModel,kingMovementModel,simplePawnModel)
 
     def needDisplay(self):
         if(self._type == PlayerType.HUMAN_TERMINAL):
@@ -83,10 +83,6 @@ class Player:
     def setReward(self, reward):
         if (self._type == PlayerType.IA):
             self._IA.learn(reward)
-
-    def saveModel(self):
-        if (self._type == PlayerType.IA):
-            self._IA.saveNeuralNetworks()
 
     def reset(self):
         if (self._type == PlayerType.IA):

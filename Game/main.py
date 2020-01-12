@@ -1,12 +1,20 @@
 import player as pl
 import game as ga
 import random
+import models as mod
 
 
 if __name__ == "__main__":
     game = ga.Game()
 
-    players = [pl.Player(pl.Player.RED,pl.PlayerType.RANDOM),pl.Player(pl.Player.BLUE,pl.PlayerType.IA)]
+    sizeX = game.getBoard(pl.Player.BLUE).SIZE_X
+    sizeY = game.getBoard(pl.Player.BLUE).SIZE_Y
+
+    pawnSelectorModel = mod.CheckersModel(mod.Mod.PAWN_SELECTOR, sizeX,sizeY)
+    kingMovementModel = mod.CheckersModel(mod.Mod.KING_MOVEMENT, sizeX,sizeY)
+    simplePawnMovementModel = mod.CheckersModel(mod.Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
+
+    players = [pl.Player(pl.Player.RED,pl.PlayerType.IA,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel),pl.Player(pl.Player.BLUE,pl.PlayerType.IA,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel)]
     party = 0
 
     redWins = 0
@@ -16,7 +24,7 @@ if __name__ == "__main__":
     print("New Game")
     print("********************************************")
     reward = 0
-    while (party < 30000):
+    while (party < 3):
         party= party + 1
         jumpedPawnsPrev = 0
         currentPlayerId = random.randint(0, 1)
@@ -81,5 +89,6 @@ if __name__ == "__main__":
         players[0].reset()
         players[1].reset()
 
-    players[0].saveModel()
-    players[1].saveModel()
+    pawnSelectorModel.saveModel()
+    kingMovementModel.saveModel()
+    simplePawnMovementModel.saveModel()

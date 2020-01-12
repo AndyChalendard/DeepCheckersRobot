@@ -41,7 +41,7 @@ class CheckersModel :
             _nomModel = 'simple_pawn_movement'
 
         self._pathModel = '../Models/model_'+_nomModel+'.h5'
-        if (0) : #os.path.exists(self._pathModel): #load the model TODO
+        if os.path.exists(self._pathModel): #load the model TODO
             self._model = tensorflow.keras.models.load_model(self._pathModel)
         else: #create the model
             self._model = Sequential()
@@ -87,7 +87,7 @@ class CheckersModel :
 
 class IA :
 
-    def __init__ (self, sizeX, sizeY, epsilon=0.1, alpha=0.3, gamma=0.9):
+    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, epsilon=0.1, alpha=0.3, gamma=0.9, ):
         '''
         Epsilon: chance of random exploration (epsilon greedy algorithm)
         Alpha: discount factor for futur action (for the qfunction)
@@ -103,9 +103,9 @@ class IA :
         self._prevPrevAvailablePawn = None
         self._prevFinalMovement = None
         self._prevPrevFinalMovement = None
-        self._pawnSelectorModel = CheckersModel(Mod.PAWN_SELECTOR, sizeX,sizeY)
-        self._kingMovementModel = CheckersModel(Mod.KING_MOVEMENT, sizeX,sizeY)
-        self._simplePawnMovementModel = CheckersModel(Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
+        self._pawnSelectorModel = pawnSelectorModel
+        self._kingMovementModel = kingMovementModel
+        self._simplePawnMovementModel = simplePawnModel
 
         self._prevXPawnWanted = None
         self._prevYPawnWanted = None
@@ -177,11 +177,6 @@ class IA :
         self._prevPrevBoard = None
         self._prevPrevAvailablePawn = None
         self._prevPrevFinalMovement = None
-
-    def saveNeuralNetworks(self):
-        self._pawnSelectorModel.saveModel()
-        self._kingMovementModel.saveModel()
-        self._simplePawnMovementModel.saveModel()
 
     def getMovementWanted(self, board, finalMovement):
         self._prevPrevFinalMovement = self._prevFinalMovement
