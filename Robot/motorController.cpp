@@ -69,9 +69,11 @@ void MotorController::posMove() {
 }
 
 void MotorController::waitUntilMove() {
-    motorTheta1->waitUntilMove();
-    motorTheta2->waitUntilMove();
-    motorTheta3->waitUntilMove();
+    while ((targetX-truePosX) > 1 || (targetY-truePosY) > 1 || (targetZ-truePosZ) > 1) {
+        motorTheta1->waitUntilMove();
+        motorTheta2->waitUntilMove();
+        motorTheta3->waitUntilMove();
+    }
 }
 
 void MotorController::go(float posX, float posY, float posZ) {

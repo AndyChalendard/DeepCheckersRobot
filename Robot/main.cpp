@@ -43,11 +43,11 @@ int main() {
     float tmpFloat1, tmpFloat2, tmpFloat3;
     bool tmpBool;
 
-    serial.printf("Starting...\r\n");
+    serial.printf("Starting...\n");
 
     threadBlinkLed.start(callback(callBackBlink, &led1));
 
-    serial.printf("Initialization of variables...\r\n");
+    serial.printf("Initialization of variables...\n");
 
     // Init of magnetic hand
     magneticField = 0;
@@ -55,34 +55,33 @@ int main() {
     // Init of motors
     Motor motorTheta1(motorTheta1Dir, motorTheta1Step, motorTheta1Home, 120, -185, -90, -185, 5, false, false);
     Motor motorTheta2(motorTheta2Dir, motorTheta2Step, motorTheta2Home, 90, -20, 90, 90, 5, false, true);
-    Motor motorTheta3(motorTheta3Dir, motorTheta3Step, motorTheta3Home, -11, -155, -11, -11, 5, true, true);
-
-    // Init of serial orders
-    SerialOrder serialOrder(serial);
+    Motor motorTheta3(motorTheta3Dir, motorTheta3Step, motorTheta3Home, -11, -146, -11, -11, 5, true, true);
     
     // Waiting for button
-    serial.printf("Waiting user...\r\n");
+    serial.printf("Waiting user...\n");
     while (btn != 0) {
         ThisThread::sleep_for(50);
     }
 
     // We load the motor controller
-    serial.printf("Moving to origin and to pause position...\r\n");
+    serial.printf("Moving to origin and to pause position...\n");
     MotorController motorController(motorTheta1, motorTheta2, motorTheta3);
 
-    serial.printf("____loop____\r\n");
+    // Init of serial orders
+    SerialOrder serialOrder(serial);
+
+    serial.printf("#READY;\n");
     while(1) {
         if (serialOrder.requestPosition.getPosTry(tmpFloat1, tmpFloat2, tmpFloat3)) {
-            serial.printf("I go to the position: %f %f %f\r\n", tmpFloat1, tmpFloat2, tmpFloat3);
+            serial.printf("I go to the position: %f %f %f\n", tmpFloat1, tmpFloat2, tmpFloat3);
             motorController.go(tmpFloat1, tmpFloat2, tmpFloat3);
 
             motorController.waitUntilMove();
-            serial.printf("#POS_OK;\n\r");
+            serial.printf("#POS_OK;\n");
         }
 
         if (serialOrder.requestMagnetic.getStateTry(tmpBool)) {
             magneticField = tmpBool;
-            serial.printf("#MAG_OK;\n\r");
         }
 
         ThisThread::sleep_for(100);

@@ -14,8 +14,6 @@ char SerialOrder::readReceive() {
     if (res == '#') {
         commandeNbChar = 0;
         receiveState = ReceiveState::header;
-
-        serial->printf("What is your request ?\n\r");
     }
 
     return res;
@@ -26,26 +24,26 @@ void SerialOrder::requestStore() {
 
     if (strcmp(commande, "POS_X") == 0) {
         requestPosition.setX(value);
-        serial->printf("Request: %s:%f stored !\n\r", commande, value);
+        serial->printf("#OK;\n");
     }
     if (strcmp(commande, "POS_Y") == 0) {
         requestPosition.setY(value);
-        serial->printf("Request: %s:%f stored !\n\r", commande, value);
+        serial->printf("#OK;\n");
     }
     if (strcmp(commande, "POS_Z") == 0) {
         requestPosition.setZ(value);
-        serial->printf("Request: %s:%f stored !\n\r", commande, value);
+        serial->printf("#OK;\n");
     }
     if (strcmp(commande, "POS_GO") == 0) {
         requestPosition.ready();
-        serial->printf("Request: %s is launch !\n\r", commande);
+        serial->printf("#OK;\n");
     }
     if (strcmp(commande, "MAGNET") == 0) {
         requestMagnetic.setState(value > 0.5f);
-        serial->printf("Request: %s is launch with state: %i !\n\r", commande, value > 0.5f);
+        serial->printf("#OK;\n");
     }
     if (strcmp(commande, "PING") == 0) {
-        serial->printf("#PONG;\n\r");
+        serial->printf("#PONG;\n");
     }
 
     commandeNbChar = 0;
@@ -65,7 +63,6 @@ void SerialOrder::serialReceive() {
                 if (rcv == ':') {
                     if (commandeNbChar != 0) {
                         commande[commandeNbChar++] = '\0';
-                        serial->printf("Selected request: %s\n\r", commande);
                         valueIsNegative = false;
                         value = 0;
 
