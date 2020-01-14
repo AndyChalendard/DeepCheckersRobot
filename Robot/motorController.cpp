@@ -38,12 +38,10 @@ void MotorController::positionCalculator() {
                 tmpFloat1 = truePosX + dirX;
                 tmpFloat2 = truePosY + dirY;
                 tmpFloat3 = truePosZ + dirZ;
-                timeToDest = DIV_TIME * 2;
             }else{
                 tmpFloat1 = truePosX;
                 tmpFloat2 = truePosY;
                 tmpFloat3 = truePosZ;
-                timeToDest = DIV_TIME;
             }
 
             // Wait for the send of the data
@@ -60,9 +58,9 @@ void MotorController::posMove() {
     // If new data is figureout
     if (motorAngleSended.try_acquire() == false) {
         // Send to motors the new angle
-        motorTheta1->setPositionWithDuration(motTheta1, timeToDest/1000);
-        motorTheta2->setPositionWithDuration(motTheta2, timeToDest/1000);
-        motorTheta3->setPositionWithDuration(motTheta3, timeToDest/1000);
+        motorTheta1->setPositionWithDuration(motTheta1, (DIV_TIME * 2)/1000);
+        motorTheta2->setPositionWithDuration(motTheta2, (DIV_TIME * 2)/1000);
+        motorTheta3->setPositionWithDuration(motTheta3, (DIV_TIME * 2)/1000);
     }
 
     motorAngleSended.release();

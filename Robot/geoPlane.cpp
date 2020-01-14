@@ -24,7 +24,7 @@ void GeoPlane::setCoord(float l, float h) {
     if (h < -110) h = -110;
     else if (h > 110) h = 110;
 
-    if (h <= 12 && h>=-12) {
+    if (h <= 20 && h>=-20) {
         if (l > 417)    l = 417;
         if (l < 70)     l = 70;
     }else if (h <= 35 && h>=-35) {

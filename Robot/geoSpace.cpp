@@ -16,9 +16,9 @@ void GeoSpace::setCoord(float x, float y, float z) {
 
     this->x = x;
     this->y = y;
-    this->z = z;
+    this->z = z - calcZError(x,y);
 
-    plane.setCoord( std::sqrt(x*x+y*y), z);
+    plane.setCoord( std::sqrt(x*x+y*y), this->z);
 }
 
 // Angle params is return in degres
@@ -48,5 +48,12 @@ void GeoSpace::getCoord(float & x, float & y, float & z) {
 
     x = this->x;
     y = this->y;
-    z = this->z;
+    z = this->z + calcZError(x, y);
+}
+
+// Correction of z with the plane calculated with H1 H2 H3
+float GeoSpace::calcZError(float x, float y){
+    float z = (GEOSPACE_H1 + GEOSPACE_H2)/2 + (GEOSPACE_H1 - GEOSPACE_H2)/600 * x +(GEOSPACE_H3/300 - (GEOSPACE_H1+GEOSPACE_H2)/600) * y;
+    
+    return (z - 20); //20mm
 }

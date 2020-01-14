@@ -8,11 +8,15 @@ class RobotMessageId:
     POSITION = 3
     OK = 4
 
+
 class RobotCom:
     def __init__(self):
         '''
         Constructor, open the serial port and expect the initialization of the robot before doing something
         '''
+        self._prevX = None
+        self._prevY = None
+        self._prevZ = None
         self._serial = ser.Serial('/dev/tty.usbmodem14203',9600)  # open serial port
         while(self._read() != RobotMessageId.INIT): #we expect the initialization of the robot
             time.sleep(0.1)
@@ -72,16 +76,25 @@ class RobotCom:
         Send a position in function of x, y , z
         return True if the robot respond
         '''
-        self._write("#POS_X:" + str(x) +";")
+        self._write("#")
+        if(self._prevX != x):
+            self._prevX = x
+            self._write("POS_X:" + str(x) +";")
+            if (self._read() != RobotMessageId.OK):
+                return False
+        if (self._prevY != y):
+            self._prevY = y
+            self._write("POS_Y:" + str(y) +";")
+            if (self._read() != RobotMessageId.OK):
+                return False
+        if(self._prevZ != z):
+            self._prevZ = z
+            self._write("POS_Z:" + str(z) +";")
+            if (self._read() != RobotMessageId.OK):
+                return False
+        self._write("POS_GO:;")
         if (self._read() != RobotMessageId.OK):
-            return False
-        self._write("#POS_Y:" + str(y) +";")
-        if (self._read() != RobotMessageId.OK):
-            return False
-        self._write("#POS_Z:" + str(z) +";")
-        if (self._read() != RobotMessageId.OK):
-            return False
-        self._write("#POS_GO:;")
+                return False
         while(self._read() != RobotMessageId.POSITION):
             time.sleep(0.1)
         return True
@@ -96,13 +109,13 @@ if __name__ == "__main__": #tests
     r = RobotCom()
     if (r.ping()):
         print("Robot detecté")
-        r.setMagnet(True)
-        r.setPosition(200,300,100)
-        r.setPosition(-200,300,100)
-        r.setPosition(300,400,200)
-        r.setPosition(0,500,200)
-        r.setMagnet(False)
+        while(1):
+            x=int(input("X ?"))
+            y=int(input("Y ?"))
+            z=int(input("Z ?"))
+            r.setPosition(x,y,z)
         r.close()
+    
 
 
 

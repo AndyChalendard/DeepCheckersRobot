@@ -26,7 +26,6 @@ class MotorController {
 
         // Current target for the motors
         float motTheta1, motTheta2, motTheta3; // In mm
-        float timeToDest; // In ms
         Semaphore motorAngleSended;
 
         // Target to go

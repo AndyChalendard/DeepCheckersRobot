@@ -3,6 +3,10 @@
 
 #include "geoPlane.hpp"
 
+#define GEOSPACE_H1 26.7 //A(300,0,H1)
+#define GEOSPACE_H2 6.5  //B(-300,0,H2)
+#define GEOSPACE_H3 13.7 //C(0,300,H3)
+
 class GeoSpace {
     private:
         GeoPlane plane; // This plane is oriented about the main axis and the hand of the robot
@@ -11,6 +15,9 @@ class GeoSpace {
         float theta1;
         bool coordIsCalc;
         float x, y, z;
+
+        // Correction of z with the plane calculated with H1 H2 H3
+        float calcZError(float x, float y);
 
     public:
         // GeoSpace constructor
