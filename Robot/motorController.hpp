@@ -5,8 +5,8 @@
 #include "motor.hpp"
 #include "geoSpace.hpp"
 
-#define SPEED    100       // mm/s
-#define DIV_TIME 400       // In ms
+#define SPEED    100        // mm/s
+#define DIV_TIME 10.0f      // In ms
 
 class MotorController {
     private:
