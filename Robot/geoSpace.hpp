@@ -3,8 +3,8 @@
 
 #include "geoPlane.hpp"
 
-#define GEOSPACE_H1 26.7 //A(300,0,H1)
-#define GEOSPACE_H2 6.5  //B(-300,0,H2)
+#define GEOSPACE_H1 29.7 //A(300,0,H1)
+#define GEOSPACE_H2 9.5  //B(-300,0,H2)
 #define GEOSPACE_H3 13.7 //C(0,300,H3)
 
 class GeoSpace {
