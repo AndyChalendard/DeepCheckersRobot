@@ -1,7 +1,21 @@
+import matplotlib.pyplot as plt
+
 import player as pl
 import game as ga
 import random
 import models as mod
+
+def graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin):
+    axs[0,0].plot(gamesWinRatioLastXGames, 'tab:green')
+    axs[0,0].axis([10, party, 0, 1])
+    axs[0,1].plot(gamesWinRatio, 'tab:green')
+    axs[0,1].axis([10, party, 0, 1])
+    axs[1,0].plot(gamesWinLoseDiff, 'tab:green')
+    axs[1,0].axis([10, party, min(gamesWinLoseDiff), max(gamesWinLoseDiff)])
+    axs[1,1].plot(gamesWin, 'tab:green')
+    axs[1,1].axis([10, party, 0, party])
+
+    plt.pause(0.0001)
 
 
 if __name__ == "__main__":
@@ -9,6 +23,9 @@ if __name__ == "__main__":
 
     sizeX = game.getBoard(pl.Player.BLUE).SIZE_X
     sizeY = game.getBoard(pl.Player.BLUE).SIZE_Y
+
+    
+    NB_GAMES_AVERAGE = 50
 
     print("___________________________________")
     print("Type of player:")
@@ -30,6 +47,29 @@ if __name__ == "__main__":
         response = input(">")
         if (response == "y" or response == "Y"):
             learn = True
+
+
+    showGraph = False
+    if (playerRedType == pl.PlayerType.IA and playerBlueType == pl.PlayerType.RANDOM):
+        print("___________________________________")
+        print("Do you want to show the graph ? (y/N)")
+        response = input(">")
+        if (response == "y" or response == "Y"):
+            showGraph = True
+
+    if (showGraph):
+        fig, axs = plt.subplots(2,2)
+        fig.suptitle('Red player stats')
+
+        gamesWinRatioLastXGames = []
+        gamesWinRatio = []
+        gamesWinLoseDiff = []
+        gamesWin = []
+
+        axs[0, 0].set_title('Games win/nbGames (on the last '+str(NB_GAMES_AVERAGE)+' games)')
+        axs[0, 1].set_title('Games win/nbGames')
+        axs[1, 0].set_title('Games win-loses')
+        axs[1, 1].set_title('Games win')
 
     pawnSelectorModel = None
     kingMovementModel = None
@@ -100,25 +140,49 @@ if __name__ == "__main__":
             '''
             currentPlayerId =(currentPlayerId +1) % 2
 
-
-        print("-------------------Game finish------------------")
         if (currentPlayer.getColor() == pl.Player.RED):
             redWins+=1
         else:
             blueWins+=1
-        game.getBoard(0).display()
-        print("------------------------------------------------")
-        print(" ********  Statistiques ******* ")
-        print("The red player wins " + str(redWins) + " parties and the blue player wins " +str(blueWins) + " parties")
-
+        
+        if (playerRedType == pl.PlayerType.HUMAN_TERMINAL or playerBlueType == pl.PlayerType.HUMAN_TERMINAL):
+            print("-------------------Game finish------------------")
+            game.getBoard(0).display()
+            print("------------------------------------------------")
+            
         if (currentPlayer.getColor() == pl.Player.RED):
             print("-----------RED wins !!-----------")
         else:
             print("-----------BLUE wins !!----------")
+
+        if (graphShow):
+            gamesWin.append(redWins)
+            gamesWinRatio.append(redWins/party)
+            gamesWinLoseDiff.append(redWins-blueWins)
+            if (party>NB_GAMES_AVERAGE):
+                tmp = NB_GAMES_AVERAGE
+                redWinsLast = gamesWin[-NB_GAMES_AVERAGE]
+            else:
+                tmp = party
+                redWinsLast = 0
+            gamesWinRatioLastXGames.append((redWins-redWinsLast)/tmp)
+
+            if (party%NB_GAMES_AVERAGE == 0):
+                graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin)
+
         game.reset()
         players[0].reset()
         players[1].reset()
 
-    pawnSelectorModel.saveModel()
-    kingMovementModel.saveModel()
-    simplePawnMovementModel.saveModel()
+    if (learn):
+        pawnSelectorModel.saveModel()
+        kingMovementModel.saveModel()
+        simplePawnMovementModel.saveModel()
+    
+    print(" ********  Statistiques ******* ")
+    print("The red player wins " + str(redWins) + " parties and the blue player wins " +str(blueWins) + " parties")
+
+    if (graphShow):
+        graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin)
+
+        input("Push enter to continue and close graphs...")
