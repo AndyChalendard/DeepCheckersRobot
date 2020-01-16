@@ -10,11 +10,36 @@ if __name__ == "__main__":
     sizeX = game.getBoard(pl.Player.BLUE).SIZE_X
     sizeY = game.getBoard(pl.Player.BLUE).SIZE_Y
 
-    pawnSelectorModel = mod.CheckersModel(mod.Mod.PAWN_SELECTOR, sizeX,sizeY)
-    kingMovementModel = mod.CheckersModel(mod.Mod.KING_MOVEMENT, sizeX,sizeY)
-    simplePawnMovementModel = mod.CheckersModel(mod.Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
+    print("___________________________________")
+    print("Type of player:")
+    print(pl.PlayerType.HUMAN_TERMINAL, ") Terminal")
+    print(pl.PlayerType.IA, ") AI")
+    print(pl.PlayerType.RANDOM, ") Random")
+    print("")
+    playerRedType = int(input("Type of player red: "))
+    playerBlueType = int(input("Type of player blue: "))
 
-    players = [pl.Player(pl.Player.RED,pl.PlayerType.IA,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel),pl.Player(pl.Player.BLUE,pl.PlayerType.IA,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel)]
+    print("___________________________________")
+    print("Number of game wanted")
+    nbGamesMax = int(input(">"))
+
+    learn = False
+    if (playerRedType == pl.PlayerType.IA or playerBlueType == pl.PlayerType.IA):
+        print("___________________________________")
+        print("AI must learn during these games ? (y/N)")
+        response = input(">")
+        if (response == "y" or response == "Y"):
+            learn = True
+
+    pawnSelectorModel = None
+    kingMovementModel = None
+    simplePawnMovementModel = None
+    if (playerRedType == pl.PlayerType.IA or playerBlueType == pl.PlayerType.IA):
+        pawnSelectorModel = mod.CheckersModel(mod.Mod.PAWN_SELECTOR, sizeX,sizeY)
+        kingMovementModel = mod.CheckersModel(mod.Mod.KING_MOVEMENT, sizeX,sizeY)
+        simplePawnMovementModel = mod.CheckersModel(mod.Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
+
+    players = [pl.Player(pl.Player.RED,playerRedType,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel),pl.Player(pl.Player.BLUE, playerBlueType,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel)]
     party = 0
 
     redWins = 0
@@ -24,9 +49,12 @@ if __name__ == "__main__":
     print("New Game")
     print("********************************************")
     reward = 0
-    while (party < 3):
+    while (party < nbGamesMax):
         party= party + 1
+
+        jumpedPawns = []
         jumpedPawnsPrev = 0
+
         currentPlayerId = random.randint(0, 1)
 
         while (game.isFinished() != True):
@@ -55,11 +83,13 @@ if __name__ == "__main__":
                 if (mvt[len(mvt) - 1] == (xmov,ymov)):
                     movement = mvt
 
-            jumpedPawns=game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
-            reward = len(jumpedPawns) - jumpedPawnsPrev
+            reward = jumpedPawnsPrev - len(jumpedPawns)
             jumpedPawnsPrev = len(jumpedPawns)
 
-            currentPlayer.setReward(reward) #we calculate the rewards of the previous movement
+            if (learn):
+                currentPlayer.setReward(reward) #we calculate the rewards of the previous movement
+
+            jumpedPawns=game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
 
             '''
             if (len(jumpedPawns) > 0):

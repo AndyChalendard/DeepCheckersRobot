@@ -27,7 +27,7 @@ class Mod:
 
 
 class CheckersModel :
-    def __init__ (self,idModel,sizeX,sizeY,kernelSize = (5,5),learningRate = 0.0001):
+    def __init__ (self,idModel,sizeX,sizeY,kernelSize = (3,3),learningRate = 0.0001):
         '''
         Creation of the model or load the model
         '''
@@ -40,31 +40,37 @@ class CheckersModel :
         else:
             _nomModel = 'simple_pawn_movement'
 
-        self._pathModel = '../Models/model_'+_nomModel+'.h5'
-        if os.path.exists(self._pathModel): #load the model TODO
-            self._model = tensorflow.keras.models.load_model(self._pathModel)
-        else: #create the model
-            self._model = Sequential()
-            inputShape = (1, sizeY, sizeX//2)
-            numOutput = sizeX//2 * sizeY
+        self._pathModel = '../ModelsWeights/'
+        if (os.path.exists(self._pathModel) == False):
+            os.mkdir(self._pathModel)
 
-            self._model.add(Conv2D(64, kernel_size=kernelSize, strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
-            self._model.add(Conv2D(16, kernel_size=(3,3), strides = (1,1), padding='same', activation='relu',name='Conv2'))
-            self._model.add(Flatten(name='Flatten'))
-            self._model.add(Dense(128, activation='relu',name='Dense1'))
-            self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
-            adam = Adam(lr=self._learningRate)
-            self._model.compile(loss=tk.losses.categorical_crossentropy,optimizer=adam,metrics=['acc'])
+        self._pathModel += _nomModel
 
-            self._model.summary()
+        self._model = Sequential()
+        inputShape = (1, sizeY, sizeX//2)
+        numOutput = sizeX//2 * sizeY
+
+        self._model.add(Conv2D(64, kernel_size=kernelSize, strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
+        self._model.add(Conv2D(16, kernel_size=(3,3), strides = (1,1), padding='same', activation='relu',name='Conv2'))
+        self._model.add(Flatten(name='Flatten'))
+        self._model.add(Dense(128, activation='relu',name='Dense1'))
+        self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
+        adam = Adam(lr=self._learningRate)
+        self._model.compile(loss=tk.losses.categorical_crossentropy,optimizer=adam,metrics=['acc'])
+
+        if os.path.exists(self._pathModel): # we load the weights if they exist
+            self._model.load_weights(self._pathModel)
+
+        self._model.summary()
 
     def getModel(self):
         return self._model
+
     def saveModel(self):
         '''
         Save the model to a futur use
         '''
-        self._model.save(self._pathModel)
+        self._model.save_weights(self._pathModel)
 
     def trainModel(self, xTrain, yTrain, batchSize = 1, numEpoch = 3):
         '''
@@ -87,7 +93,7 @@ class CheckersModel :
 
 class IA :
 
-    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, epsilon=0.1, alpha=0.3, gamma=0.9, ):
+    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, epsilon=0.1, alpha=0.1, gamma=0.9, ):
         '''
         Epsilon: chance of random exploration (epsilon greedy algorithm)
         Alpha: discount factor for futur action (for the qfunction)
@@ -100,9 +106,6 @@ class IA :
         self._prevBoard = None
         self._prevPrevBoard = None
         self._prevAvailablePawn = None
-        self._prevPrevAvailablePawn = None
-        self._prevFinalMovement = None
-        self._prevPrevFinalMovement = None
         self._pawnSelectorModel = pawnSelectorModel
         self._kingMovementModel = kingMovementModel
         self._simplePawnMovementModel = simplePawnModel
@@ -112,21 +115,27 @@ class IA :
         self._prevPrevXPawnWanted = None
         self._prevPrevYPawnWanted = None
 
+        self._prevXMouvementWanted = None
+        self._prevYMouvementWanted = None
+        self._prevPrevXMouvementWanted = None
+        self._prevPrevYMouvementWanted = None
+
     def resetIA(self):
         self._prevBoard = None
         self._prevPrevBoard = None
         self._prevAvailablePawn = None
-        self._prevPrevAvailablePawn = None
-        self._prevFinalMovement = None
-        self._prevPrevFinalMovement = None
 
         self._prevXPawnWanted = None
         self._prevYPawnWanted = None
         self._prevPrevXPawnWanted = None
         self._prevPrevYPawnWanted = None
 
+        self._prevXMouvementWanted = None
+        self._prevYMouvementWanted = None
+        self._prevPrevXMouvementWanted = None
+        self._prevPrevYMouvementWanted = None
+
     def getPawnWanted(self, board, availablePawn):
-        self._prevPrevAvailablePawn = self._prevAvailablePawn
         self._prevAvailablePawn = availablePawn
 
         self._prevPrevXPawnWanted = self._prevXPawnWanted
@@ -141,7 +150,7 @@ class IA :
             for pawn in availablePawn:
                 xPawn = pawn[0]//2
                 yPawn = pawn[1]
-                index = xPawn*4 + yPawn
+                index = xPawn*(board.SIZE_X//2) + yPawn
                 if (max < output[0][index]):
                     max = output[0][index]
                     self._prevXPawnWanted = pawn[0]
@@ -149,58 +158,52 @@ class IA :
 
         return self._prevXPawnWanted, self._prevYPawnWanted
 
-    def _learnModel(self, modelToLearn, prevPrevSolutions, reward):
+    def _learnModel(self, modelToLearn, action, reward):
         prevQ = modelToLearn.predictModel(self._prevPrevBoard.getBoard())
         newQ = modelToLearn.predictModel(self._prevBoard.getBoard())
-        maxNewQ = -1
-        for solution in prevPrevSolutions:
-            x = solution[0]//2
-            y = solution[1]
-            index = x*self._prevBoard.SIZE_X//2 + y
-            if (maxNewQ < newQ[0][index]):
-                maxNewQ = newQ[0][index]
-        modelToLearn.trainModel(self._prevPrevBoard.getBoard(),prevQ + self._alpha *((reward + self._gamma * maxNewQ)-prevQ))
+        maxNewQ = max(newQ[0])
+
+        indiceAction = (action[0]//2) * (self._prevBoard.SIZE_X//2) + action[1]
+        prevQ[0][indiceAction] += self._alpha * ( (reward + self._gamma * maxNewQ) - prevQ[0][indiceAction])
+        modelToLearn.trainModel(self._prevPrevBoard.getBoard(),prevQ)
 
     def learn(self, reward):
-        if self._prevPrevBoard and self._prevPrevAvailablePawn and self._prevPrevFinalMovement:
+        if self._prevPrevBoard:
             #Learn for pawnSelector
-            self._learnModel(self._pawnSelectorModel, self._prevPrevAvailablePawn, reward)
+            self._learnModel(self._pawnSelectorModel, (self._prevPrevXPawnWanted, self._prevPrevYPawnWanted), reward)
 
             #Learn for KingMovements
             if (self._prevPrevBoard.getSquare(self._prevPrevXPawnWanted,self._prevPrevYPawnWanted) == bd.Pawns.RED_KING):
-                self._learnModel(self._kingMovementModel, self._prevPrevFinalMovement, reward)
+                self._learnModel(self._kingMovementModel, (self._prevPrevXMouvementWanted, self._prevPrevYMouvementWanted), reward)
 
             #Learn for SimpleMovements
             elif (self._prevPrevBoard.getSquare(self._prevPrevXPawnWanted,self._prevPrevYPawnWanted) == bd.Pawns.RED):
-                self._learnModel(self._simplePawnMovementModel, self._prevPrevFinalMovement, reward)
+                self._learnModel(self._simplePawnMovementModel, (self._prevPrevXMouvementWanted, self._prevPrevYMouvementWanted), reward)
 
         self._prevPrevBoard = None
-        self._prevPrevAvailablePawn = None
-        self._prevPrevFinalMovement = None
 
     def getMovementWanted(self, board, finalMovement):
-        self._prevPrevFinalMovement = self._prevFinalMovement
-        self._prevFinalMovement = finalMovement
-
+        self._prevPrevXMouvementWanted = self._prevXMouvementWanted
+        self._prevPrevYMouvementWanted = self._prevYMouvementWanted
         self._prevPrevBoard = self._prevBoard
         self._prevBoard = board.copy()
         if (random.random() < self._epsilon):
-            xMovWanted, yMovWanted = random.choice(finalMovement) #exploration
+            self._prevXMouvementWanted, self._prevYMouvementWanted = random.choice(finalMovement) #exploration
         else: #exploitation
             if (board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED_KING):
                 output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
             elif(board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED):
                 output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
             max = -1
-            xMovWanted = -1
-            yMovWanted = -1
+            self._prevXMouvementWanted = -1
+            self._prevYMouvementWanted = -1
             for mov in finalMovement:
                 xMov = mov[0]//2
                 yMov = mov[1]
                 index = xMov*4 + yMov
                 if (max < output[0][index]):
                     max = output[0][index]
-                    xMovWanted = mov[0]
-                    yMovWanted = mov[1]
+                    self._prevXMouvementWanted = mov[0]
+                    self._prevYMouvementWanted = mov[1]
 
-        return xMovWanted, yMovWanted
+        return self._prevXMouvementWanted, self._prevYMouvementWanted

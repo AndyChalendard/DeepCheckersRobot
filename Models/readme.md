@@ -1,1 +1,0 @@
-##Dossier obligatoire pour permettre la création des modèles du réseau de neuronnes
