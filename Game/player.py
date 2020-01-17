@@ -80,7 +80,8 @@ class Player:
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         return xMov, yMov
 
-    def setReward(self, reward):
+    # currentBoard is just use for training the last mouvement of the game
+    def setReward(self, reward, currentBoard = None):
         if (self._type == PlayerType.IA):
             self._IA.learn(reward)
 

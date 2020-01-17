@@ -167,7 +167,18 @@ class IA :
         prevQ[0][indiceAction] += self._alpha * ( (reward + self._gamma * maxNewQ) - prevQ[0][indiceAction])
         modelToLearn.trainModel(self._prevPrevBoard.getBoard(),prevQ)
 
-    def learn(self, reward):
+    # We learn action and theirs reward. The value of currentBoard permits to learn in the end of the game (when the AI has no pawn to played)
+    def learn(self, reward, currentBoard = None):
+        if (currentBoard != None):
+            self._prevPrevBoard = self._prevBoard
+            self._prevBoard = currentBoard.copy()
+
+            self._prevPrevXPawnWanted = self._prevXPawnWanted
+            self._prevPrevYPawnWanted = self._prevYPawnWanted
+
+            self._prevPrevXMouvementWanted = self._prevXMouvementWanted
+            self._prevPrevYMouvementWanted = self._prevYMouvementWanted
+
         if self._prevPrevBoard:
             #Learn for pawnSelector
             self._learnModel(self._pawnSelectorModel, (self._prevPrevXPawnWanted, self._prevPrevYPawnWanted), reward)
@@ -179,6 +190,9 @@ class IA :
             #Learn for SimpleMovements
             elif (self._prevPrevBoard.getSquare(self._prevPrevXPawnWanted,self._prevPrevYPawnWanted) == bd.Pawns.RED):
                 self._learnModel(self._simplePawnMovementModel, (self._prevPrevXMouvementWanted, self._prevPrevYMouvementWanted), reward)
+
+        if (currentBoard != None):
+            self.resetIA()
 
         self._prevPrevBoard = None
 

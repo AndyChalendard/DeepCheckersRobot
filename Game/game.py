@@ -52,6 +52,9 @@ class Game:
         '''
         Method to set a movement in the board
         '''
+        score = 0
+
+        # Convert coordinate for blue player
         if (playerColor == pl.Player.BLUE):
             newMovementValid = []
             for elt in movementValid:
@@ -60,11 +63,14 @@ class Game:
             destination = (self._board.SIZE_X - destination[0] - 1,self._board.SIZE_Y - destination[1] - 1)
             pawn = (self._board.SIZE_X - pawn[0] - 1,self._board.SIZE_Y - pawn[1] - 1)
 
-
         if (destination[1] == bd.Board.SIZE_Y-1 and playerColor == pl.Player.BLUE ): #the pawn turns into a king
             self._board.setSquare(destination[0],destination[1],bd.Pawns.BLUE_KING)
+            if (self._board.getSquare(pawn[0], pawn[1]) == bd.Pawns.BLUE):
+                score += 2 # turns into king give 2 points
         elif(destination[1] == 0 and playerColor == pl.Player.RED): #the pawn turns into a king
             self._board.setSquare(destination[0],destination[1],bd.Pawns.RED_KING)
+            if (self._board.getSquare(pawn[0], pawn[1]) == bd.Pawns.RED):
+                score += 2 # turns into king give 2 points
         else:
             self._board.setSquare(destination[0],destination[1],self._board.getSquare(pawn[0],pawn[1]))
 
@@ -87,9 +93,10 @@ class Game:
                 if(self._board.getSquare(prec[0],prec[1]) != bd.Pawns.NULL):
                     self._board.setSquare(prec[0],prec[1],bd.Pawns.NULL) #there are no opponent pawns here now
                     pawnJumped.append(prec)
+                    score += 1 # Jump a pawn give 1 point
                 prec = (prec[0] + xdir,prec[1] + ydir)
 
-        return pawnJumped
+        return pawnJumped, score
 
 
     def _checkSimplePawnsMovement(self,x,y,color,board,paths,currentPath = []):

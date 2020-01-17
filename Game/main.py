@@ -89,11 +89,13 @@ if __name__ == "__main__":
     print("New Game")
     print("********************************************")
     reward = 0
+
+    # We play to nbGamesMax games
     while (party < nbGamesMax):
         party= party + 1
 
-        jumpedPawns = []
-        jumpedPawnsPrev = 0
+        prevScore = 0
+        prevPrevScore = 0
 
         currentPlayerId = random.randint(0, 1)
 
@@ -103,7 +105,7 @@ if __name__ == "__main__":
             if (currentPlayer.needDisplay() == True):
                 game.getBoard(currentPlayer.getColor()).display()
 
-
+            # We request the pawns to played and the mouvement wanted
             availableMovements = game.getAvailableMovementForAllPawns(currentPlayer.getColor())
             validPawns = game.pawnsCanBePlayed(availableMovements)
             x,y=currentPlayer.getPawnWanted(validPawns,game.getBoard(currentPlayer.getColor()))
@@ -113,37 +115,38 @@ if __name__ == "__main__":
 
             xmov,ymov = currentPlayer.getMovementWanted(finalMovement, game.getBoard(currentPlayer.getColor()))
 
-            '''
-            if (currentPlayer.getColor() == pl.Player.RED):
-                print("RED move " +str((x,y)) + " to " + str((xmov,ymov)))
-            else:
-                print("BLUE move " +str((x,y)) + " to " + str((xmov,ymov)))
-            '''
+            # We search the mouvement wanted by the player (the player give the coordinate of the destination)
             for mvt in movementsValid:
                 if (mvt[len(mvt) - 1] == (xmov,ymov)):
                     movement = mvt
 
-            reward = jumpedPawnsPrev - len(jumpedPawns)
-            jumpedPawnsPrev = len(jumpedPawns)
+
+            # We figure out the current player's score
+            prevPrevReward = prevPrevScore - prevScore
+            prevPrevScore = prevScore
 
             if (learn):
-                currentPlayer.setReward(reward) #we calculate the rewards of the previous movement
+                if (game.isFinished() == True):
+                    prevPrevReward += 3
 
-            jumpedPawns=game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
+                 # We figure out the rewards of the previous movement of the current player
+                currentPlayer.setReward(prevPrevReward)
 
-            '''
-            if (len(jumpedPawns) > 0):
-                if (currentPlayer.getColor() == pl.Player.RED):
-                    print("Player RED jumped " +str(jumpedPawns))
-                else:
-                    print("Player BLUE jumped " +str(jumpedPawns))
-            '''
+            # Do the mouvement and return the score
+            jumpedPawns, prevScore = game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
+
+
             currentPlayerId =(currentPlayerId +1) % 2
 
         if (currentPlayer.getColor() == pl.Player.RED):
             redWins+=1
         else:
             blueWins+=1
+        
+        # We give the reward for the loosing player
+        if (learn):
+            loosePlayer = players[(currentPlayerId + 1) % 2]
+            loosePlayer.setReward(-3 - prevScore, game.getBoard(loosePlayer.getColor()))
         
         if (playerRedType == pl.PlayerType.HUMAN_TERMINAL or playerBlueType == pl.PlayerType.HUMAN_TERMINAL):
             print("-------------------Game finish------------------")
@@ -155,7 +158,7 @@ if __name__ == "__main__":
         else:
             print("-----------BLUE wins !!----------")
 
-        if (graphShow):
+        if (showGraph):
             gamesWin.append(redWins)
             gamesWinRatio.append(redWins/party)
             gamesWinLoseDiff.append(redWins-blueWins)
@@ -182,7 +185,7 @@ if __name__ == "__main__":
     print(" ********  Statistiques ******* ")
     print("The red player wins " + str(redWins) + " parties and the blue player wins " +str(blueWins) + " parties")
 
-    if (graphShow):
+    if (showGraph):
         graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin)
 
         input("Push enter to continue and close graphs...")
