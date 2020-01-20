@@ -2,6 +2,8 @@ import serial as ser
 import time
 import board as bd
 import numpy as np
+import sys
+import glob
 
 class RobotMessageId:
     INIT = 0
@@ -9,6 +11,36 @@ class RobotMessageId:
     PONG = 2
     POSITION = 3
     OK = 4
+
+
+
+def serial_ports():
+    """ Lists serial port names
+
+        :raises EnvironmentError:
+            On unsupported or unknown platforms
+        :returns:
+            A list of the serial ports available on the system
+    """
+    if sys.platform.startswith('win'):
+        ports = ['COM%s' % (i + 1) for i in range(256)]
+    elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'):
+        # this excludes your current terminal "/dev/tty"
+        ports = glob.glob('/dev/tty[A-Za-z]*')
+    elif sys.platform.startswith('darwin'):
+        ports = glob.glob('/dev/tty.*')
+    else:
+        raise EnvironmentError('Unsupported platform')
+
+    result = []
+    for port in ports:
+        try:
+            s = ser.Serial(port)
+            s.close()
+            result.append(port)
+        except (OSError, ser.SerialException):
+            pass
+    return result
 
 class RobotCom:
     def __init__(self):
@@ -18,9 +50,71 @@ class RobotCom:
         self._prevX = None
         self._prevY = None
         self._prevZ = None
-        self._serial = ser.Serial('/dev/tty.usbmodem14203',9600)  # open serial port
-        while(self._read() != RobotMessageId.INIT): #we expect the initialization of the robot
-            time.sleep(0.1)
+
+        numPort= None
+        while (numPort == None):
+            print("___________________________________")
+            print("Choose the serial port :")
+            listePorts = self._listSerialPorts()
+            for i in range (len(listePorts)):
+                print(i, ") ",listePorts[i])
+            print("Press enter to refresh ... ")
+            print("___________________________________")
+            try:
+                numPort = int(input(""))
+                self._serial = ser.Serial(listePorts[numPort],9600)# open serial port
+                if(self.ping() == False):
+                    print("")
+                    print("****")
+                    print("ERROR: The robot doesn't respond: check the connection...")
+                    print("****")
+                    numPort = None
+                else:
+                    while(self._read() != RobotMessageId.INIT): #we expect the initialization of the robot
+                        time.sleep(0.1)
+            except ValueError:
+                numPort= None
+                pass
+            except IndexError:
+                numPort= None
+                pass
+            except ser.serialutil.SerialException:
+                numPort= None
+                print("")
+                print("****")
+                print("ERROR: The robot doesn't respond: check the serial port...")
+                print("****")
+                pass
+
+
+
+    def _listSerialPorts(self):
+        """ Lists serial port names
+
+            :raises EnvironmentError:
+                On unsupported or unknown platforms
+            :returns:
+                A list of the serial ports available on the system
+        """
+        if sys.platform.startswith('win'): #WINDOWS
+            ports = ['COM%s' % (i + 1) for i in range(256)]
+            result = []
+            for port in ports:
+                try:
+                    s = ser.Serial(port)
+                    s.close()
+                    result.append(port)
+                except (OSError, ser.SerialException):
+                    pass
+            return result
+        elif sys.platform.startswith('linux') or sys.platform.startswith('cygwin'): #LINUX
+            # this excludes your current terminal "/dev/tty"
+            ports = glob.glob('/dev/tty[A-Za-z]*')
+        elif sys.platform.startswith('darwin'): #MAC OS
+            ports = glob.glob('/dev/tty.*')
+        else:
+            raise EnvironmentError('Unsupported platform')            
+        return ports
 
     def _read(self):
         '''

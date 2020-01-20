@@ -43,6 +43,10 @@ int main() {
     float tmpFloat1, tmpFloat2, tmpFloat3;
     bool tmpBool;
 
+
+    // Init of serial orders
+    SerialOrder serialOrder(serial);
+
     serial.printf("Starting...\n");
 
     threadBlinkLed.start(callback(callBackBlink, &led1));
@@ -66,9 +70,6 @@ int main() {
     // We load the motor controller
     serial.printf("Moving to origin and to pause position...\n");
     MotorController motorController(motorTheta1, motorTheta2, motorTheta3);
-
-    // Init of serial orders
-    SerialOrder serialOrder(serial);
 
     serial.printf("#READY;\n");
     while(1) {
