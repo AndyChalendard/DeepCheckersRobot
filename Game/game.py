@@ -6,6 +6,10 @@ import numpy as np
 class Game:
     def __init__(self):
         self._board = bd.Board()
+        self._board.resetEmpty()
+        self._board.setSquare(7,1,bd.Pawns.RED)
+        self._board.setSquare(4,0,bd.Pawns.BLUE)
+
 
     def getBoard(self, color):
         if (color == pl.Player.RED):
@@ -53,7 +57,7 @@ class Game:
         Method to set a movement in the board
         '''
         score = 0
-
+        goToKing = False
         # Convert coordinate for blue player
         if (playerColor == pl.Player.BLUE):
             newMovementValid = []
@@ -67,10 +71,12 @@ class Game:
             self._board.setSquare(destination[0],destination[1],bd.Pawns.BLUE_KING)
             if (self._board.getSquare(pawn[0], pawn[1]) == bd.Pawns.BLUE):
                 score += 2 # turns into king give 2 points
+                goToKing = True
         elif(destination[1] == 0 and playerColor == pl.Player.RED): #the pawn turns into a king
             self._board.setSquare(destination[0],destination[1],bd.Pawns.RED_KING)
             if (self._board.getSquare(pawn[0], pawn[1]) == bd.Pawns.RED):
                 score += 2 # turns into king give 2 points
+                goToKing = True
         else:
             self._board.setSquare(destination[0],destination[1],self._board.getSquare(pawn[0],pawn[1]))
 
@@ -96,7 +102,7 @@ class Game:
                     score += 1 # Jump a pawn give 1 point
                 prec = (prec[0] + xdir,prec[1] + ydir)
 
-        return pawnJumped, score
+        return pawnJumped, score, goToKing
 
 
     def _checkSimplePawnsMovement(self,x,y,color,board,paths,currentPath = []):

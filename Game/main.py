@@ -4,6 +4,7 @@ import player as pl
 import game as ga
 import random
 import models as mod
+import robotCom as rc
 
 def graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin):
     axs[0,0].plot(gamesWinRatioLastXGames, 'tab:green')
@@ -39,6 +40,14 @@ if __name__ == "__main__":
     print("___________________________________")
     print("Number of game wanted")
     nbGamesMax = int(input(">"))
+
+    gameRobot = None
+    if (playerRedType == pl.PlayerType.RANDOM or playerRedType == pl.PlayerType.IA):
+        print("___________________________________")
+        print("Do you want to play with the robot ? (y/N)")
+        response = input(">")
+        if (response == "y" or response == "Y"):
+            gameRobot = rc.GameRobot()
 
     learn = False
     if (playerRedType == pl.PlayerType.IA or playerBlueType == pl.PlayerType.IA):
@@ -97,6 +106,12 @@ if __name__ == "__main__":
         prevScore = 0
         prevPrevScore = 0
 
+        if (gameRobot):
+            gameRobot.reset()
+            print("___________________________________")
+            print("Push enter when the board is ready..")
+            input("")
+
         currentPlayerId = random.randint(0, 1)
 
         while (game.isFinished() != True):
@@ -133,7 +148,11 @@ if __name__ == "__main__":
                 currentPlayer.setReward(prevPrevReward)
 
             # Do the mouvement and return the score
-            jumpedPawns, prevScore = game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
+            jumpedPawns, prevScore ,goToKing= game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
+
+
+            if (currentPlayer.getColor() == pl.Player.RED and gameRobot != None):
+                gameRobot.movePawn((x,y),(xmov,ymov),jumpedPawns,goToKing,movement,game.getBoard(currentPlayer.getColor()))
 
 
             currentPlayerId =(currentPlayerId +1) % 2
