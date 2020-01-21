@@ -64,6 +64,9 @@ class CheckersModel :
         self._model.summary()
 
     def getModel(self):
+        '''
+        Return the model
+        '''
         return self._model
 
     def saveModel(self):
@@ -121,6 +124,9 @@ class IA :
         self._prevPrevYMouvementWanted = None
 
     def resetIA(self):
+        '''
+        Reset all attributes of the IA
+        '''
         self._prevBoard = None
         self._prevPrevBoard = None
         self._prevAvailablePawn = None
@@ -136,6 +142,10 @@ class IA :
         self._prevPrevYMouvementWanted = None
 
     def getPawnWanted(self, board, availablePawn):
+        '''
+        Return (x,y) the pawn to play with
+        We use the model for exploitation and random for exploration
+        '''
         self._prevAvailablePawn = availablePawn
 
         self._prevPrevXPawnWanted = self._prevXPawnWanted
@@ -159,6 +169,9 @@ class IA :
         return self._prevXPawnWanted, self._prevYPawnWanted
 
     def _learnModel(self, modelToLearn, action, reward):
+        '''
+        Private : template of the Q-function for a modeltolearn
+        '''
         prevQ = modelToLearn.predictModel(self._prevPrevBoard.getBoard())
         newQ = modelToLearn.predictModel(self._prevBoard.getBoard())
         maxNewQ = max(newQ[0])
@@ -167,8 +180,11 @@ class IA :
         prevQ[0][indiceAction] += self._alpha * ( (reward + self._gamma * maxNewQ) - prevQ[0][indiceAction])
         modelToLearn.trainModel(self._prevPrevBoard.getBoard(),prevQ)
 
-    # We learn action and theirs reward. The value of currentBoard permits to learn in the end of the game (when the AI has no pawn to played)
     def learn(self, reward, currentBoard = None):
+        '''
+        We learn action and theirs reward. 
+        The value of currentBoard permits to learn in the end of the game (when the AI has no pawn to played)
+        '''
         if (currentBoard != None):
             self._prevPrevBoard = self._prevBoard
             self._prevBoard = currentBoard.copy()
@@ -197,6 +213,11 @@ class IA :
         self._prevPrevBoard = None
 
     def getMovementWanted(self, board, finalMovement):
+        '''
+        Return (x,y) the square of the movement
+        Exploitation use the model of the neural network
+        Exploration :  random
+        '''
         self._prevPrevXMouvementWanted = self._prevXMouvementWanted
         self._prevPrevYMouvementWanted = self._prevYMouvementWanted
         self._prevPrevBoard = self._prevBoard

@@ -16,6 +16,9 @@ class Player:
             self._IA = mod.IA(sizeX,sizeY,pawnSelectorModel,kingMovementModel,simplePawnModel)
 
     def needDisplay(self):
+        '''
+        Return True if we need to display the board (human terminal)
+        '''
         if(self._type == PlayerType.HUMAN_TERMINAL):
             return True
         else:
@@ -80,12 +83,19 @@ class Player:
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         return xMov, yMov
 
-    # currentBoard is just use for training the last mouvement of the game
     def setReward(self, reward, currentBoard = None):
+        '''
+        learn the player IA with the reward
+        currentBoard is just use for training the last mouvement of the game
+        '''
         if (self._type == PlayerType.IA):
             self._IA.learn(reward)
 
     def reset(self):
+        '''
+        Reset the IA if the player is IA
+        '''
+
         if (self._type == PlayerType.IA):
             self._IA.resetIA()
 

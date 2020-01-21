@@ -6,12 +6,12 @@ import numpy as np
 class Game:
     def __init__(self):
         self._board = bd.Board()
-        self._board.resetEmpty()
-        self._board.setSquare(7,1,bd.Pawns.RED)
-        self._board.setSquare(4,0,bd.Pawns.BLUE)
-
 
     def getBoard(self, color):
+        '''
+        Get the board of the game
+        if the color if blue we reverse the board
+        '''
         if (color == pl.Player.RED):
             return self._board.copy()
         else:
@@ -50,6 +50,9 @@ class Game:
         return True
 
     def reset(self):
+        '''
+        Reset the game board
+        '''
         self._board.reset()
 
     def setMovement(self,pawn,destination,playerColor,movementValid):
@@ -323,14 +326,13 @@ class Game:
 
 
     def getFinalMovement(self, validMovements):
+        '''
+        Return the final movement, ie. the square of the movement
+        '''
         finalMovement = []
         for elt in validMovements:
             finalMovement.append(elt[len(elt)-1])
         return finalMovement
-
-
-
-
 
 if __name__ == "__main__":
     g=Game()

@@ -38,17 +38,23 @@ class Board:
         return newBoard
     
     def reverseColor(self):
+        '''
+        Reverse the color of all pawns of the board
+        '''
         bd = Board()
         bd._board = self._board * (-1)
         return bd
 
 
     def getBoard(self):
+        '''
+        Return the board
+        '''
         return self._board
 
     def reset(self):
         """
-        Reset the _board
+        Reset the board
         """
         self.resetEmpty()
         for i in range (self.SIZE_Y):
@@ -113,6 +119,9 @@ class Board:
         return(i,j)
 
     def reverseBoard(self):
+        '''
+        Return the position all pawns of the board
+        '''
         bd = Board()
         for i in range(self.SIZE_Y):
             for j in range(self.SIZE_X//2):
