@@ -114,7 +114,7 @@ if __name__ == "__main__":
 
         currentPlayerId = random.randint(0, 1)
 
-        while (game.isFinished() != True):
+        while (game.isFinished(players[currentPlayerId].getColor()) != True):
             currentPlayer = players[currentPlayerId]
 
             if (currentPlayer.needDisplay() == True):
@@ -141,7 +141,7 @@ if __name__ == "__main__":
             prevPrevScore = prevScore
 
             if (learn):
-                if (game.isFinished() == True):
+                if (game.isFinished(players[(currentPlayerId + 1) % 2].getColor()) == True):
                     prevPrevReward += 3
 
                  # We figure out the rewards of the previous movement of the current player
@@ -167,10 +167,10 @@ if __name__ == "__main__":
             loosePlayer = players[(currentPlayerId + 1) % 2]
             loosePlayer.setReward(-3 - prevScore, game.getBoard(loosePlayer.getColor()))
         
-        if (playerRedType == pl.PlayerType.HUMAN_TERMINAL or playerBlueType == pl.PlayerType.HUMAN_TERMINAL):
-            print("-------------------Game finish------------------")
-            game.getBoard(0).display()
-            print("------------------------------------------------")
+        #if (playerRedType == pl.PlayerType.HUMAN_TERMINAL or playerBlueType == pl.PlayerType.HUMAN_TERMINAL):
+        print("-------------------Game finish------------------")
+        game.getBoard(0).display()
+        print("------------------------------------------------")
             
         if (currentPlayer.getColor() == pl.Player.RED):
             print("-----------RED wins !!-----------")

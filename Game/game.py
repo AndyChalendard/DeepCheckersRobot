@@ -17,7 +17,7 @@ class Game:
         else:
             return self._board.reverseBoard()
 
-    def isFinished(self):
+    def isFinished(self,playerColor):
         '''
         Return True if the game is finished
         '''
@@ -27,9 +27,11 @@ class Game:
         red_pawns = [bd.Pawns.RED, bd.Pawns.RED_KING]
         blue_pawns = [bd.Pawns.BLUE_KING, bd.Pawns.BLUE]
 
-        availableMovRed = self.getAvailableMovementForAllPawns(pl.Player.RED)
-        availableMovBlue = self.getAvailableMovementForAllPawns(pl.Player.BLUE)
-        if (len(availableMovRed) == 0 or len(availableMovBlue) == 0): #there are only one pawn but it can't be played
+        if (playerColor == pl.Player.RED):
+            availableMov= self.getAvailableMovementForAllPawns(pl.Player.RED)
+        else:
+            availableMov= self.getAvailableMovementForAllPawns(pl.Player.BLUE)
+        if (len(availableMov) == 0): #there are only one pawn but it can't be played
             return True
 
         for x in range(self._board.SIZE_X):

@@ -180,14 +180,18 @@ class RobotCheckers :
     #Center to center
     X_MIN = - SIZE_X_REAL//2
     X_MAX = SIZE_X_REAL//2
-    Y_MIN = 130  #Distance between the robot and the board
-    Y_MAX = 130 + SIZE_Y_REAL
+    Y_MIN = 124  #Distance between the robot and the board
+    Y_MAX = Y_MIN + SIZE_Y_REAL
 
-    X_PAWN_STACK= X_MIN-55 #Coordonates of the pawns stack to take
-    Y_PAWN_STACK = (Y_MAX+Y_MIN)//2
+    X_PAWN_STACK= -172 #Coordonates of the pawns stack to take
+    Y_PAWN_STACK = 242
 
     X_PAWN_DROP = -360 #Coordonates of the position to drop pawns
     Y_PAWN_DROP = 50
+
+    Z_PAWNS = -1
+    Z_NAVIGATION = 15
+    Z_JUMP = 25
 
     PAWNS_STACK = 10 #Number of pawns in the stack in home
 
@@ -219,17 +223,17 @@ class RobotCheckers :
         '''
         Check the 4 angles of the board to calibrate the X_MIN & Y_MIN & X_MAX & Y_MAX
         '''
-        self._robot.setPosition(self.X_MIN,self.Y_MIN,20,self.X_MIN,self.Y_MIN,5)
-        self._robot.setPosition(self.X_MIN,self.Y_MIN,5)
+        self._robot.setPosition(self.X_MIN,self.Y_MIN,self.Z_NAVIGATION,self.X_MIN,self.Y_MIN,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MIN,self.Y_MIN,self.Z_PAWNS)
         time.sleep(2)
-        self._robot.setPosition(self.X_MIN,self.Y_MAX,20,self.X_MIN,self.Y_MAX,5)
-        self._robot.setPosition(self.X_MIN,self.Y_MAX,5)
+        self._robot.setPosition(self.X_MIN,self.Y_MAX,self.Z_NAVIGATION,self.X_MIN,self.Y_MAX,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MIN,self.Y_MAX,self.Z_PAWNS)
         time.sleep(2)
-        self._robot.setPosition(self.X_MAX,self.Y_MAX,20,self.X_MAX,self.Y_MAX,5)
-        self._robot.setPosition(self.X_MAX,self.Y_MAX,5)
+        self._robot.setPosition(self.X_MAX,self.Y_MAX,self.Z_NAVIGATION,self.X_MAX,self.Y_MAX,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MAX,self.Y_MAX,self.Z_PAWNS)
         time.sleep(2)
-        self._robot.setPosition(self.X_MAX,self.Y_MIN,20,self.X_MAX,self.Y_MIN,5)
-        self._robot.setPosition(self.X_MAX,self.Y_MIN,5)
+        self._robot.setPosition(self.X_MAX,self.Y_MIN,self.Z_NAVIGATION,self.X_MAX,self.Y_MIN,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MAX,self.Y_MIN,self.Z_PAWNS)
         time.sleep(2)
     
     def createBoard(self,board):
@@ -269,10 +273,10 @@ class RobotCheckers :
         '''
         if (self._caughtPawn == False):
             x,y=self._convertSquareToMovement(square,board)
-            self._robot.setPosition(x,y,20,x,y,5)
-            self._robot.setPosition(x,y,5,x,y,20)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION,x,y,self.Z_PAWNS)
+            self._robot.setPosition(x,y,self.Z_PAWNS,x,y,self.Z_NAVIGATION)
             self._caughtPawn = self._robot.setMagnet(activate=True)
-            self._robot.setPosition(x,y,20)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION)
             return self._caughtPawn
         return False
 
@@ -283,11 +287,11 @@ class RobotCheckers :
         '''
         if (self._caughtPawn == True):
             x,y=self._convertSquareToMovement(square,board)
-            self._robot.setPosition(x,y,20,x,y,5)
-            self._robot.setPosition(x,y,5,x,y,20)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION,x,y,self.Z_PAWNS)
+            self._robot.setPosition(x,y,self.Z_PAWNS,x,y,self.Z_NAVIGATION)
             self._robot.setMagnet(activate=False)
             self._caughtPawn = False
-            self._robot.setPosition(x,y,20)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION)
             return True
         return False
 
@@ -302,8 +306,8 @@ class RobotCheckers :
         Take a pawn in the home position where the stack is
         '''
         if (self._pawnsHome != 0 and self._caughtPawn == False):
-            self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,100,self.X_PAWN_STACK,self.Y_PAWN_STACK,5*self._pawnsHome)
-            self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,5*self._pawnsHome,self.X_PAWN_STACK,self.Y_PAWN_STACK,100)
+            self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,100,self.X_PAWN_STACK,self.Y_PAWN_STACK,5*self._pawnsHome-6)
+            self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,5*self._pawnsHome-6,self.X_PAWN_STACK,self.Y_PAWN_STACK,100)
             self._caughtPawn = self._robot.setMagnet(activate=True)
             if (self._caughtPawn):
                 self._pawnsHome = self._pawnsHome - 1
@@ -328,8 +332,8 @@ class RobotCheckers :
         '''
         for square in squares:
             x,y=self._convertSquareToMovement(square,board)
-            self._robot.setPosition(x,y,30,x,y,20)
-            self._robot.setPosition(x,y,20)
+            self._robot.setPosition(x,y,self.Z_JUMP,x,y,self.Z_NAVIGATION)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION)
 
 
 class GameRobot :
@@ -421,6 +425,9 @@ if __name__ == "__main__": #tests
         rc.dropPawn()
     '''
     rc.createBoard(board)
+    #while(1):
+     #   rc.takePawnFromStack()
+      #  rc.dropPawn()
 
 
 
