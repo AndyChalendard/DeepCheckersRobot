@@ -4,7 +4,6 @@ import player as pl
 import game as ga
 import random
 import models as mod
-import robotCom as rc
 
 def graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin):
     axs[0,0].plot(gamesWinRatioLastXGames, 'tab:green')
@@ -47,6 +46,7 @@ if __name__ == "__main__":
         print("Do you want to play with the robot ? (y/N)")
         response = input(">")
         if (response == "y" or response == "Y"):
+            import robotCom as rc
             gameRobot = rc.GameRobot()
 
     learn = False
@@ -167,15 +167,17 @@ if __name__ == "__main__":
             loosePlayer = players[(currentPlayerId + 1) % 2]
             loosePlayer.setReward(-3 - prevScore, game.getBoard(loosePlayer.getColor()))
         
-        #if (playerRedType == pl.PlayerType.HUMAN_TERMINAL or playerBlueType == pl.PlayerType.HUMAN_TERMINAL):
-        print("-------------------Game finish------------------")
-        game.getBoard(0).display()
-        print("------------------------------------------------")
+        if (playerRedType == pl.PlayerType.HUMAN_TERMINAL or playerBlueType == pl.PlayerType.HUMAN_TERMINAL):
+            print("-------------------Game finish------------------")
+            game.getBoard(0).display()
+            print("------------------------------------------------")
             
         if (currentPlayer.getColor() == pl.Player.RED):
             print("-----------RED wins !!-----------")
         else:
             print("-----------BLUE wins !!----------")
+
+        print(party, "Games finished")
 
         if (showGraph):
             gamesWin.append(redWins)
