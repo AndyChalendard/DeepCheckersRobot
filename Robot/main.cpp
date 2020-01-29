@@ -71,6 +71,8 @@ int main() {
     serial.printf("Moving to origin and to pause position...\n");
     MotorController motorController(motorTheta1, motorTheta2, motorTheta3);
 
+    ThisThread::sleep_for(8000);
+
     serial.printf("#READY;\n");
     while(1) {
         if (serialOrder.requestPosition.getPosTry(tmpFloat1, tmpFloat2, tmpFloat3)) {

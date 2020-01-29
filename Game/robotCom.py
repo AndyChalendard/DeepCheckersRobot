@@ -39,6 +39,7 @@ class RobotCom:
                     print("****")
                     print("ERROR: The robot doesn't respond: check the connection...")
                     print("****")
+                    self._serial.close()
                     numPort = None
                 else:
                     while(self._read() != RobotMessageId.INIT): #we expect the initialization of the robot
@@ -112,7 +113,7 @@ class RobotCom:
         '''
         for char in text:
             self._serial.write(char.encode('ascii'))
-            time.sleep(0.1)
+            time.sleep(0.01)
 
     def ping(self):
         '''
