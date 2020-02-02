@@ -57,12 +57,14 @@ class Game:
         '''
         self._board.reset()
 
-    def setMovement(self,pawn,destination,playerColor,movementValid):
+    def setMovement(self,pawn,playerColor,movementValid):
         '''
         Method to set a movement in the board
         '''
         score = 0
         goToKing = False
+        destination = movementValid[len(movementValid) - 1]
+        
         # Convert coordinate for blue player
         if (playerColor == pl.Player.BLUE):
             newMovementValid = []

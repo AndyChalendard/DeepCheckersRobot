@@ -58,7 +58,7 @@ class Player:
             xPawn,yPawn = self._IA.getPawnWanted(tmpBoard, validPawns)
         return xPawn, yPawn
 
-    def getMovementWanted(self,finalMovement, board):
+    def getMovementWanted(self,finalMovement,movementsValid, board):
         """
         Get the movement that the player wants to do
         """
@@ -81,7 +81,11 @@ class Player:
             else:
                 tmpBoard = board.copy()
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
-        return xMov, yMov
+            
+        for mvt in movementsValid:
+            if (mvt[len(mvt) - 1] == (xMov,yMov)):
+                movement = mvt
+        return movement
 
     def setReward(self, reward, currentBoard = None):
         '''

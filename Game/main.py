@@ -128,12 +128,7 @@ if __name__ == "__main__":
             finalMovement = game.getFinalMovement(movementsValid)
 
 
-            xmov,ymov = currentPlayer.getMovementWanted(finalMovement, game.getBoard(currentPlayer.getColor()))
-
-            # We search the mouvement wanted by the player (the player give the coordinate of the destination)
-            for mvt in movementsValid:
-                if (mvt[len(mvt) - 1] == (xmov,ymov)):
-                    movement = mvt
+            movement = currentPlayer.getMovementWanted(finalMovement, movementsValid, game.getBoard(currentPlayer.getColor()))
 
 
             # We figure out the current player's score
@@ -148,11 +143,11 @@ if __name__ == "__main__":
                 currentPlayer.setReward(prevPrevReward)
 
             # Do the mouvement and return the score
-            jumpedPawns, prevScore ,goToKing= game.setMovement((x,y),(xmov,ymov),currentPlayer.getColor(),movement)
+            jumpedPawns, prevScore ,goToKing= game.setMovement((x,y),currentPlayer.getColor(),movement)
 
 
             if (currentPlayer.getColor() == pl.Player.RED and gameRobot != None):
-                gameRobot.movePawn((x,y),(xmov,ymov),jumpedPawns,goToKing,movement,game.getBoard(currentPlayer.getColor()))
+                gameRobot.movePawn((x,y),jumpedPawns,goToKing,movement,game.getBoard(currentPlayer.getColor()))
 
 
             currentPlayerId =(currentPlayerId +1) % 2
