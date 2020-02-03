@@ -26,8 +26,11 @@ class Pawns:
 class Board: 
     SIZE_X=8
     SIZE_Y=SIZE_X
-    def __init__(self): 
-        self.reset()
+    def __init__(self, fullBoard = True):
+        if (fullBoard):
+            self.reset()
+        else:
+            self.resetEmpty()
 
     def copy(self):
         """
