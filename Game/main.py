@@ -194,6 +194,13 @@ if __name__ == "__main__":
             if (party%NB_GAMES_AVERAGE == 0):
                 graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin)
 
+        if (learn):
+            if (party%250 == 0):
+                pawnSelectorModel.saveModel()
+                kingMovementModel.saveModel()
+                simplePawnMovementModel.saveModel()
+                print("Models Saved !")
+
         game.reset()
         players[0].reset()
         players[1].reset()

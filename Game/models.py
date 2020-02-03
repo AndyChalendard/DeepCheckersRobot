@@ -50,8 +50,9 @@ class CheckersModel :
         inputShape = (1, sizeY, sizeX//2)
         numOutput = sizeX//2 * sizeY
 
-        self._model.add(Conv2D(64, kernel_size=kernelSize, strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
-        self._model.add(Conv2D(16, kernel_size=(3,3), strides = (1,1), padding='same', activation='relu',name='Conv2'))
+        self._model.add(Conv2D(128, kernel_size=(6,3), strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
+        self._model.add(Conv2D(64, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv2'))
+        self._model.add(Conv2D(16, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv3'))
         self._model.add(Flatten(name='Flatten'))
         self._model.add(Dense(128, activation='relu',name='Dense1'))
         self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
