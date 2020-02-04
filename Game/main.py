@@ -32,6 +32,7 @@ if __name__ == "__main__":
     print(pl.PlayerType.HUMAN_TERMINAL, ") Terminal")
     print(pl.PlayerType.IA, ") AI")
     print(pl.PlayerType.RANDOM, ") Random")
+    print(pl.PlayerType.CAMERA, ") Camera")
     print("")
     playerRedType = int(input("Type of player red: "))
     playerBlueType = int(input("Type of player blue: "))
@@ -123,7 +124,7 @@ if __name__ == "__main__":
             # We request the pawns to played and the mouvement wanted
             availableMovements = game.getAvailableMovementForAllPawns(currentPlayer.getColor())
             validPawns = game.pawnsCanBePlayed(availableMovements)
-            x,y=currentPlayer.getPawnWanted(validPawns,game.getBoard(currentPlayer.getColor()))
+            x,y=currentPlayer.getPawnWanted(validPawns,game.getBoard(currentPlayer.getColor()), availableMovements)
             movementsValid = game.movementsValid((x,y),availableMovements)
             finalMovement = game.getFinalMovement(movementsValid)
 

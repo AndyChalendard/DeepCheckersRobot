@@ -1,9 +1,12 @@
 import random
 import models as mod
+import cameraPlayer as CP
+
 class PlayerType:
     HUMAN_TERMINAL = 0
     IA = 1
     RANDOM = 2
+    CAMERA = 3
 
 class Player:
     RED = 0
@@ -14,6 +17,9 @@ class Player:
         self._type = playerType
         if (self._type == PlayerType.IA and sizeX and sizeY and pawnSelectorModel and kingMovementModel and simplePawnModel):
             self._IA = mod.IA(sizeX,sizeY,pawnSelectorModel,kingMovementModel,simplePawnModel)
+        
+        if (self._type == PlayerType.CAMERA):
+            self._camPlayer = CP.CameraPlayer()
 
     def needDisplay(self):
         '''
@@ -30,7 +36,7 @@ class Player:
         '''
         return self._color
 
-    def getPawnWanted(self,validPawns, board):
+    def getPawnWanted(self,validPawns, board, availableMovements):
         '''
         Get the pawn that the player wants to play with
         '''
@@ -56,6 +62,11 @@ class Player:
             if (self._color == self.BLUE):
                 tmpBoard = board.reverseColor()
             xPawn,yPawn = self._IA.getPawnWanted(tmpBoard, validPawns)
+        elif (self._type == PlayerType.CAMERA):
+            tmpBoard = board.copy()
+            if (self._color == self.BLUE):
+                tmpBoard = board.reverseColor()
+            xPawn, yPawn = self._camPlayer.getPawnWanted(tmpBoard, availableMovements)
         return xPawn, yPawn
 
     def getMovementWanted(self,finalMovement,movementsValid, board):
@@ -81,10 +92,17 @@ class Player:
             else:
                 tmpBoard = board.copy()
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
-            
-        for mvt in movementsValid:
-            if (mvt[len(mvt) - 1] == (xMov,yMov)):
-                movement = mvt
+        elif (self._type == PlayerType.CAMERA):
+            if (self._color == self.BLUE):
+                tmpBoard = board.reverseColor()
+            else:
+                tmpBoard = board.copy()
+            movement = self._camPlayer.getMovementWanted(tmpBoard)
+        
+        if (xMov != -1 and yMov != -1):
+            for mvt in movementsValid:
+                if (mvt[len(mvt) - 1] == (xMov,yMov)):
+                    movement = mvt
         return movement
 
     def setReward(self, reward, currentBoard = None):

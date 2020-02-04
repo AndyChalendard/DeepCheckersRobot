@@ -399,7 +399,7 @@ if __name__ == "__main__":
                     pass
 
         cam.showImage(im)
-        key = cv2.waitKey(50)
+        key = cv2.waitKey(500)
 
 
     key = -1
