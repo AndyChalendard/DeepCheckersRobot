@@ -34,8 +34,10 @@ if __name__ == "__main__":
     print(pl.PlayerType.RANDOM, ") Random")
     print(pl.PlayerType.CAMERA, ") Camera")
     print("")
-    playerRedType = int(input("Type of player red: "))
-    playerBlueType = int(input("Type of player blue: "))
+    playerRedType = pl.PlayerType.CAMERA
+    while (playerRedType == pl.PlayerType.CAMERA):
+        playerRedType = int(input("Type of player red (No camera): "))
+    playerBlueType = int(input("Type of player blue (No robot): "))
 
     print("___________________________________")
     print("Number of game wanted")

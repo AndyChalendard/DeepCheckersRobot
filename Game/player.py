@@ -63,10 +63,7 @@ class Player:
                 tmpBoard = board.reverseColor()
             xPawn,yPawn = self._IA.getPawnWanted(tmpBoard, validPawns)
         elif (self._type == PlayerType.CAMERA):
-            tmpBoard = board.copy()
-            if (self._color == self.BLUE):
-                tmpBoard = board.reverseColor()
-            xPawn, yPawn = self._camPlayer.getPawnWanted(tmpBoard, availableMovements)
+            xPawn, yPawn = self._camPlayer.getPawnWanted(board.copy(), availableMovements, self._color)
         return xPawn, yPawn
 
     def getMovementWanted(self,finalMovement,movementsValid, board):
@@ -93,11 +90,7 @@ class Player:
                 tmpBoard = board.copy()
             xMov,yMov = self._IA.getMovementWanted(tmpBoard, finalMovement)
         elif (self._type == PlayerType.CAMERA):
-            if (self._color == self.BLUE):
-                tmpBoard = board.reverseColor()
-            else:
-                tmpBoard = board.copy()
-            movement = self._camPlayer.getMovementWanted(tmpBoard)
+            movement = self._camPlayer.getMovementWanted()
         
         if (xMov != -1 and yMov != -1):
             for mvt in movementsValid:

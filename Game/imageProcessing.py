@@ -3,7 +3,9 @@ import numpy as np
 import board as bd
 
 class Image:
-    # Contain an image
+    '''
+    Contain an image
+    '''
 
     # Size of the image
     _sizeX = None
@@ -24,21 +26,30 @@ class Image:
         self._sizeY = None
 
     def getSizeX(self):
-        #return the X size of the image
+        '''
+        return the X size of the image
+        '''
+
         if (self._sizeX == None):
             self._sizeX = len(self._rgb[0])
             
         return self._sizeX
 
     def getSizeY(self):
-        # return the Y size of the image
+        '''
+        return the Y size of the image
+        '''
+
         if (self._sizeY == None):
             self._sizeY = len(self._rgb)
             
         return self._sizeY
 
     def getHsv(self):
-        # return the hsv image
+        '''
+        return the hsv image
+        '''
+
         if (self._hsvDef == False):
             self._hsvDef = True
             self._hsv = cv2.cvtColor(self._rgb, cv2.COLOR_BGR2HSV)
@@ -46,11 +57,15 @@ class Image:
         return self._hsv
 
     def getRgb(self):
-        # return the rgb image
+        '''
+        return the rgb image
+        '''
         return self._rgb
 
 class AreaRect:
-    # Working area class
+    '''
+    Working area class
+    '''
 
     # Coordinate of the window
     xMin = None
@@ -73,26 +88,38 @@ class AreaRect:
             self.yMax = y2
     
     def getPt1(self):
-        # Return the point in the top corner left
+        '''
+        Return the point in the top corner left
+        '''
         return (self.xMin, self.yMin)
     
     def getPt2(self):
-        # Return the point in the bottom corner right
+        '''
+        Return the point in the bottom corner right
+        '''
         return (self.xMax, self.yMax)
     
     def getArea(self):
-        # get the sarea of the volume
+        '''
+        get the sarea of the volume
+        '''
         return (self.xMax-self.xMin)*(self.yMax-self.yMin)
     
     def pointIsInArea(self, x, y):
-        # return true if the point given is in the working area
+        '''
+        return true if the point given is in the working area
+        '''
+
         if (self.xMin<x and x<self.xMax):
             if (self.yMin<y and y<self.yMax):
                 return True
+
         return False
 
 class Camera:
-    # Class who manage the camera
+    '''
+    Class who manage the camera
+    '''
 
     # Name of the window opened to show the image
     NAME = "Checkers"
@@ -184,17 +211,24 @@ class Camera:
                 boardValid = True
     
     def _getPointPositionMax(self, points, coord = 0):
-        # Get the minimum position in the tab, on the coord (1:x ; 0:y)
+        '''
+        Get the minimum position in the tab, on the coord (1:x ; 0:y)
+        '''
+
         m = points[0][coord]
         position = 0
         for i in range(0, len(points)):
             if (points[i][coord] > m):
                 m = points[i][coord]
                 position = i
+
         return position
 
     def showBoardPoint(self, imShow):
-        # Show the board with the coord detect
+        '''
+        Show the board with the coord detect
+        '''
+
         for y in range(0, bd.Board().SIZE_Y):
             for x in range(0, bd.Board().SIZE_X):
                 case = self._checkersSquarePosition[y][x]
@@ -202,7 +236,9 @@ class Camera:
                     self._drawCrossAndText(imShow, "("+str(x)+":"+str(y)+")", case[0], case[1])
 
     def _drawCrossAndText(self, im, text, x, y, color = (0,0,0), crossSize = 3):
-        # Show a cross and a text in the position (x,y)
+        '''
+        Show a cross and a text in the position (x,y)
+        '''
 
         # Show the text if exists
         if (text):
@@ -219,13 +255,19 @@ class Camera:
             im.getRgb()[y][x+j][2] = color[2]
 
     def _getDistanceBetweenPoint(self, pt1, pt2):
-        # return the distance between two pixel
+        '''
+        return the distance between two pixel
+        '''
+
         dist = ((pt1[0]-pt2[0])**2) + ((pt1[1]-pt2[1])**2)
 
         return dist
 
     def _getBoardPositionOfPawn(self, pawnPosition):
-        # Return the nearest square for the pawn
+        '''
+        Return the nearest square for the pawn
+        '''
+
         x = 0
         y = 0
 
@@ -244,6 +286,10 @@ class Camera:
         return (x, y)
 
     def getBoard(self, im):
+        '''
+        Return the board detected in the image
+        All pawn return is simple pawn
+        '''
         tmpBoard = bd.Board(fullBoard=False)
 
         # We search the pawn
@@ -253,12 +299,12 @@ class Camera:
 
             # We figure out the mask of the pawn color
             if (color == BLUE):
-                pawnMask = cam._getMaskBluePawns(im)
+                pawnMask = self._getMaskBluePawns(im)
                 pawnColor = bd.Pawns.BLUE
                 colorText = "Blue"
             else:
                 pawnColor = bd.Pawns.RED
-                pawnMask = cam._getMaskRedPawns(im)
+                pawnMask = self._getMaskRedPawns(im)
                 colorText = "Red"
         
             # We figure out the filtered image
@@ -275,14 +321,19 @@ class Camera:
         return tmpBoard
 
     def showPawn(self, im, squarePosition, color = (0,255,0)):
-        # Show the contour of the pawn at the position pawnPosition
+        '''
+        Show the contour of the pawn at the position pawnPosition
+        '''
 
         case = self._checkersSquarePosition[squarePosition[1]][squarePosition[0]]
 
         self._drawCrossAndText(im, None, case[0], case[1], color=color, crossSize=10)
 
     def _clickImage(self, event, x, y, flags, param):
-        # Click event on the image
+        '''
+        Click event on the image
+        '''
+
         if (self._requireArea == True):
             if event == cv2.EVENT_LBUTTONDOWN:
                 self._tmpXClick = x
@@ -291,7 +342,10 @@ class Camera:
                 self._areaSelected = AreaRect(x,y, self._tmpXClick, self._tmpYClick)
 
     def captureScreen(self):
-        # Get the image capture by camera
+        '''
+        Get the image capture by camera
+        '''
+
         _, im = self._camera.read()
 
         image = Image(im)
@@ -299,7 +353,10 @@ class Camera:
         return image
 
     def _getMaskRedPawns(self, image):
-        # Get the mask for the red color
+        '''
+        Get the mask for the red color
+        '''
+
         hsv = image.getHsv()
 
         # define range of blue color in HSV
@@ -314,7 +371,10 @@ class Camera:
         return maskRed
 
     def _getMaskBluePawns(self,image):
-        # Get the mask of the blue color
+        '''
+        Get the mask of the blue color
+        '''
+
         hsv = image.getHsv()
 
         lower_blue = np.array([60,60,0]) #60 20 0
@@ -324,7 +384,10 @@ class Camera:
         return maskBlue
 
     def _getMaskYellowSquare(self,image):
-        # Get the mask of the yellow color
+        '''
+        Get the mask of the yellow color
+        '''
+
         hsv = image.getHsv()
 
         lower_yellow = np.array([20,150,0])
@@ -333,8 +396,11 @@ class Camera:
 
         return maskYellow
 
-    def showImage(self, image):
-        # Show the image and the working area
+    def showImage(self, image, wait=False):
+        '''
+        Show the image and the working area
+        '''
+
         rgb = image.getRgb()
 
         if (self._areaSelected != None):
@@ -345,8 +411,14 @@ class Camera:
         cv2.namedWindow(self.NAME)
         cv2.setMouseCallback(self.NAME, self._clickImage)
 
+        if (wait == True):
+            cv2.waitKey(10)
+
     def _findContour(self, imageShow,imageFiltered, showContours=True, text=None):
-        # Search the contours of the image, return tab wich contain the coord in x and y, and the contour of the object
+        '''
+        Search the contours of the image, return tab wich contain the coord in x and y, and the contour of the object
+        '''
+        
         centerPoint = []
 
         # We search the contour
