@@ -429,7 +429,7 @@ class Camera:
         for cnt in contours:
             perimetre=cv2.arcLength(cnt,True)
             # If the detected object is large enought
-            if (perimetre > 120):
+            if (120 < perimetre and perimetre < 500):
 
                 M = cv2.moments(cnt)
                 if (M["m00"] != 0):

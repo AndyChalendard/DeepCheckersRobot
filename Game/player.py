@@ -1,6 +1,5 @@
 import random
 import models as mod
-import cameraPlayer as CP
 
 class PlayerType:
     HUMAN_TERMINAL = 0
@@ -19,6 +18,7 @@ class Player:
             self._IA = mod.IA(sizeX,sizeY,pawnSelectorModel,kingMovementModel,simplePawnModel)
         
         if (self._type == PlayerType.CAMERA):
+            import cameraPlayer as CP
             self._camPlayer = CP.CameraPlayer()
 
     def needDisplay(self):
