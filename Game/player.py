@@ -11,11 +11,11 @@ class Player:
     RED = 0
     BLUE = 1
 
-    def __init__(self,color,playerType,sizeX=None,sizeY=None,pawnSelectorModel=None, kingMovementModel=None, simplePawnModel=None):
+    def __init__(self,color,playerType,sizeX=None,sizeY=None,pawnSelectorModel=None, kingMovementModel=None, simplePawnModel=None, learn=None):
         self._color = color
         self._type = playerType
         if (self._type == PlayerType.IA and sizeX and sizeY and pawnSelectorModel and kingMovementModel and simplePawnModel):
-            self._IA = mod.IA(sizeX,sizeY,pawnSelectorModel,kingMovementModel,simplePawnModel)
+            self._IA = mod.IA(sizeX,sizeY,pawnSelectorModel,kingMovementModel,simplePawnModel,learn)
         
         if (self._type == PlayerType.CAMERA):
             import cameraPlayer as CP
