@@ -97,7 +97,7 @@ class CheckersModel :
 
 class IA :
 
-    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, epsilon=0.1, alpha=0.1, gamma=0.9, ):
+    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, epsilon=0.1, alpha=0.1, gamma=0.9 ):
         '''
         Epsilon: chance of random exploration (epsilon greedy algorithm)
         Alpha: discount factor for futur action (for the qfunction)

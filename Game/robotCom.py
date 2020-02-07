@@ -150,7 +150,7 @@ class RobotCom:
             self._prevZ = z
             self._write("POS_Z:" + str(z) +";")
 
-    def setPosition(self,x,y,z,xSuiv=None,ySuiv=None,zSuiv=None):
+    def setPosition(self,x,y,z):
         '''
         Send a position in function of x, y , z
         return True if the robot respond
@@ -159,8 +159,6 @@ class RobotCom:
         self._write("POS_GO:;")
         if (self._read() != RobotMessageId.OK):
             return False
-        if (xSuiv and ySuiv and zSuiv and True==False):
-            self._putPosition(xSuiv,ySuiv,zSuiv)
         while(self._read() != RobotMessageId.POSITION):
             time.sleep(0.01)
 
@@ -200,14 +198,14 @@ class RobotCheckers :
     HOME_Y = Y_MIN
     HOME_Z = 50
 
-    realCoord = [ [(-119,375),None,(-47,375),None,(25,375),None,(97,375),None],
-                  [None,(-84,338),None,(-13,338),None,(58,338),None,(132,338)],
-                  [(-122,303),None,(-55,303),None,(19,303),None,(90,303),None],
-                  [None,(-88,265),None,(-17,268),None,(52,268),None,(123,268)],
-                  [(-124,229),None,(-55,227),None,(14,229),None,(85,230),None],
-                  [None,(-93,191),None,(-22,195),None,(50,195),None,(119,197)],
-                  [(-128,155),None,(-56,155),None,(12,157),None,(84,161),None],
-                  [None,(-88,119),None,(-19,119),None,(46,124),None,(122,124)] ]
+    realCoord = [ [(-119,375),None,(-45,372),None,(25,372),None,(95,370),None],
+                  [None,(-82,340),None,(-13,338),None,(60,335),None,(130,335)],
+                  [(-118,303),None,(-51,303),None,(20,303),None,(90,301),None],
+                  [None,(-84,265),None,(-17,264),None,(53,265),None,(125,265)],
+                  [(-124,229),None,(-57,227),None,(14,229),None,(84,230),None],
+                  [None,(-89,193),None,(-22,191),None,(51,195),None,(117,195)],
+                  [(-128,157),None,(-53,155),None,(16,157),None,(83,158),None],
+                  [None,(-88,122),None,(-17,121),None,(50,122),None,(120,124)] ]
 
     def __init__ (self):
         self._robot = RobotCom()
@@ -233,22 +231,22 @@ class RobotCheckers :
         '''
         Check the 4 angles of the board to calibrate the X_MIN & Y_MIN & X_MAX & Y_MAX
         '''
-        self._robot.setPosition(self.X_MIN,self.Y_MIN,self.Z_NAVIGATION,self.X_MIN,self.Y_MIN,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MIN,self.Y_MIN,self.Z_NAVIGATION)
         self._robot.setPosition(self.X_MIN,self.Y_MIN,self.Z_PAWNS)
         time.sleep(4)
-        self._robot.setPosition(self.X_MIN,self.Y_MAX,self.Z_NAVIGATION,self.X_MIN,self.Y_MAX,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MIN,self.Y_MAX,self.Z_NAVIGATION)
         self._robot.setPosition(self.X_MIN,self.Y_MAX,self.Z_PAWNS)
         time.sleep(4)
-        self._robot.setPosition(0,self.Y_MAX,self.Z_NAVIGATION,0,self.Y_MAX,self.Z_PAWNS)
+        self._robot.setPosition(0,self.Y_MAX,self.Z_NAVIGATION)
         self._robot.setPosition(0,self.Y_MAX,self.Z_PAWNS)
         time.sleep(4)
-        self._robot.setPosition(0,self.Y_MIN,self.Z_NAVIGATION,0,0,self.Z_PAWNS)
+        self._robot.setPosition(0,self.Y_MIN,self.Z_NAVIGATION)
         self._robot.setPosition(0,self.Y_MIN,self.Z_PAWNS)
         time.sleep(4)
-        self._robot.setPosition(self.X_MAX,self.Y_MIN,self.Z_NAVIGATION,self.X_MAX,self.Y_MIN,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MAX,self.Y_MIN,self.Z_NAVIGATION)
         self._robot.setPosition(self.X_MAX,self.Y_MIN,self.Z_PAWNS)
         time.sleep(4)
-        self._robot.setPosition(self.X_MAX,self.Y_MAX,self.Z_NAVIGATION,self.X_MAX,self.Y_MAX,self.Z_PAWNS)
+        self._robot.setPosition(self.X_MAX,self.Y_MAX,self.Z_NAVIGATION)
         self._robot.setPosition(self.X_MAX,self.Y_MAX,self.Z_PAWNS)
         time.sleep(4)
     
@@ -262,6 +260,8 @@ class RobotCheckers :
                     self._robot.setPosition(x,y,self.Z_PAWNS)
                     time.sleep(2)
                     self._robot.setPosition(x,y,self.Z_NAVIGATION)
+                    print(x,y)
+                    input("")
                 except bd.SquareNotValid:
                     pass
     
@@ -301,7 +301,7 @@ class RobotCheckers :
         '''
         if (self._caughtPawn == False):
             x,y=self._convertSquareToMovement(square,board)
-            self._robot.setPosition(x,y,self.Z_NAVIGATION,x,y,self.Z_PAWNS)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION)
             self._robot.setPosition(x,y,self.Z_PAWNS)
             self._caughtPawn = self._robot.setMagnet(activate=True)
             self._robot.setPosition(x,y,self.Z_NAVIGATION)
@@ -315,7 +315,7 @@ class RobotCheckers :
         '''
         if (self._caughtPawn == True):
             x,y=self._convertSquareToMovement(square,board)
-            self._robot.setPosition(x,y,self.Z_NAVIGATION,x,y,self.Z_PAWNS)
+            self._robot.setPosition(x,y,self.Z_NAVIGATION)
             self._robot.setPosition(x,y,self.Z_PAWNS)
             self._robot.setMagnet(activate=False)
             self._caughtPawn = False
@@ -334,7 +334,7 @@ class RobotCheckers :
         Take a pawn in the home position where the stack is
         '''
         if (self._pawnsHome != 0 and self._caughtPawn == False):
-            self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,100,self.X_PAWN_STACK,self.Y_PAWN_STACK,5*self._pawnsHome-6)
+            self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,100)
             self._robot.setPosition(self.X_PAWN_STACK,self.Y_PAWN_STACK,5*self._pawnsHome-6)
             self._caughtPawn = self._robot.setMagnet(activate=True)
             if (self._caughtPawn):
@@ -346,7 +346,7 @@ class RobotCheckers :
         Drop a pawn in the position where there are dropped pawns
         '''
         if (self._caughtPawn == True):
-            self._robot.setPosition(self.HOME_X,self.HOME_Y,self.HOME_Z,self.X_PAWN_DROP,self.Y_PAWN_DROP,100)
+            self._robot.setPosition(self.HOME_X,self.HOME_Y,self.HOME_Z)
             self._robot.setPosition(self.X_PAWN_DROP,self.Y_PAWN_DROP,100)
             self._robot.setMagnet(activate=False)
             self._caughtPawn = False
@@ -449,7 +449,7 @@ if __name__ == "__main__": #tests
         rc.dropPawn()
     '''
     
-    rc.goHome()
+    rc.checkAllCase(board)
     #while(1):
      #   rc.takePawnFromStack()
       #  rc.dropPawn()
