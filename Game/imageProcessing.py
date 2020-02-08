@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import board as bd
+import os
+import pickle
 
 class Image:
     '''
@@ -116,6 +118,24 @@ class AreaRect:
 
         return False
 
+    def save(self, fileName):
+        '''
+        Save the working area in the file
+        '''
+
+        f = open(fileName, "wb")
+        pickle.dump([self.xMin, self.xMax, self.yMin, self.yMax], f)
+        f.close()
+    
+    def load(self, fileName):
+        '''
+        Load the working area
+        '''
+
+        f = open(fileName, 'rb')
+        [self.xMin, self.xMax, self.yMin, self.yMax] = pickle.load(f)
+        f.close()
+
 class Camera:
     '''
     Class who manage the camera
@@ -125,7 +145,7 @@ class Camera:
     NAME = "Checkers"
 
     # If the new working area is needed (click event is made)
-    _requireArea = True
+    _requireArea = False
     # Working area variable
     _areaSelected = None
 
@@ -135,80 +155,107 @@ class Camera:
     def __init__(self):
         self._camera = cv2.VideoCapture(0)
 
+        self._pathSave = '../ImageProcessing/'
+        if (os.path.exists(self._pathSave) == False):
+            os.mkdir(self._pathSave)
+
         # Waiting for the selection of working area
-        key = -1
-        while (key != 113 or self._areaSelected == None or self._areaSelected.getArea() <= 80000):
+        self._roiName = 'ROI'
+        self._squarePositionName = "squarePosition"
+        if (os.path.exists(self._pathSave+self._roiName) and os.path.exists(self._pathSave+self._squarePositionName)):
+            #Load configuration
+
+            self._areaSelected = AreaRect(0,0,0,0)
+            self._areaSelected.load(self._pathSave+self._roiName)
+
+            f = open(self._pathSave+self._squarePositionName, 'rb')
+            self._checkersSquarePosition = pickle.load(f)
+            f.close()
+        else:
+            #Create configuration
+            self._requireArea = True
             key = -1
-
-            image = self.captureScreen()
-
-            if (self._areaSelected == None):
-                cv2.putText(image.getRgb(), "No area selected !", (10, image.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
-            elif (self._areaSelected.getArea() <= 80000):
-                cv2.putText(image.getRgb(), "Area too small !", (10, image.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
-            else:
-                cv2.putText(image.getRgb(), "Tap 'q' when the selected area is good", (10, image.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
-            
-            self.showImage(image)
-            key = cv2.waitKey(10)
-
-        self._requireArea = False
-        print("Working area selected")
-
-        # Detection of the position of the board
-        boardValid = False
-        while (boardValid == False):
-            # Detect square position
-            checkersSquarePosition = []
-            key = -1
-            while (len(checkersSquarePosition) != 32 or key != 111):
+            while (key != 113 or self._areaSelected == None or self._areaSelected.getArea() <= 80000):
                 key = -1
 
-                imShow = self.captureScreen()
+                image = self.captureScreen()
 
-                # Apply blur to split square
-                blur_image = Image(cv2.blur(imShow.getRgb(),(23,23)))
-
-                squareMaskYellow = self._getMaskYellowSquare(blur_image)
-                
-                imFiltered = Image(cv2.bitwise_and(blur_image.getRgb(),blur_image.getRgb(), mask=squareMaskYellow))
-                checkersSquarePosition = self._findContour(imFiltered, imFiltered, True, "case")
-
-                if (len(checkersSquarePosition) != 32):
-                    cv2.putText(imFiltered.getRgb(), "Board square is not detect", (10, imShow.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+                if (self._areaSelected == None):
+                    cv2.putText(image.getRgb(), "No area selected !", (10, image.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+                elif (self._areaSelected.getArea() <= 80000):
+                    cv2.putText(image.getRgb(), "Area too small !", (10, image.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
                 else:
-                    cv2.putText(imFiltered.getRgb(), "Board OK, you can press 'o' to valid detection", (10, imShow.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 255, 0), 2)
-
-                self.showImage(imFiltered)
+                    cv2.putText(image.getRgb(), "Tap 'q' when the selected area is good", (10, image.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+                
+                self.showImage(image)
                 key = cv2.waitKey(10)
 
-            self._checkersSquarePosition = [[None for i in range(0, bd.Board().SIZE_X)] for i in range(0,bd.Board().SIZE_Y)]
+            self._requireArea = False
+            print("Working area selected")
 
-            for j in range(0, bd.Board().SIZE_Y):
-                # We search the Y higher remaining point
-                currentPoint = []
-                for i in range(0, bd.Board().SIZE_X//2):
-                    posY = self._getPointPositionMax(checkersSquarePosition, 1)
-                    point = checkersSquarePosition[posY]
-                    currentPoint.append(point)
-                    checkersSquarePosition.remove(point)
+            # Detection of the position of the board
+            boardValid = False
+            while (boardValid == False):
+                # Detect square position
+                checkersSquarePosition = []
+                key = -1
+                while (len(checkersSquarePosition) != 32 or key != 111):
+                    key = -1
 
-                # We search the most left point and put in the boardtab
-                for i in range(0, len(currentPoint)):
-                    pos = self._getPointPositionMax(currentPoint, 0)
-                    point = currentPoint[pos]
-                    self._checkersSquarePosition[j][i*2+(j%2)] = point
-                    currentPoint[pos] = (0, 0, None)
-            
-            # We show the coord in the screen
-            imShow = self.captureScreen()
-            self.showBoardPoint(imShow)
-            self.showImage(imShow)
-            key = cv2.waitKey(1000)
+                    imShow = self.captureScreen()
 
-            tap = input("Do you want valid the board ? (y/N)")
-            if (tap == "y" or tap == "Y"):
-                boardValid = True
+                    # Apply blur to split square
+                    blur_image = Image(cv2.blur(imShow.getRgb(),(23,23)))
+
+                    squareMaskYellow = self._getMaskYellowSquare(blur_image)
+                    
+                    imFiltered = Image(cv2.bitwise_and(blur_image.getRgb(),blur_image.getRgb(), mask=squareMaskYellow))
+                    checkersSquarePosition = self._findContour(imFiltered, imFiltered, True, "case")
+
+                    if (len(checkersSquarePosition) != 32):
+                        cv2.putText(imFiltered.getRgb(), "Board square is not detect", (10, imShow.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 0, 255), 2)
+                    else:
+                        cv2.putText(imFiltered.getRgb(), "Board OK, you can press 'o' to valid detection", (10, imShow.getSizeY()-20), cv2.FONT_HERSHEY_SIMPLEX,0.5, (0, 255, 0), 2)
+
+                    self.showImage(imFiltered)
+                    key = cv2.waitKey(10)
+
+                self._checkersSquarePosition = [[None for i in range(0, bd.Board().SIZE_X)] for i in range(0,bd.Board().SIZE_Y)]
+
+                for j in range(0, bd.Board().SIZE_Y):
+                    # We search the Y higher remaining point
+                    currentPoint = []
+                    for i in range(0, bd.Board().SIZE_X//2):
+                        posY = self._getPointPositionMax(checkersSquarePosition, 1)
+                        point = checkersSquarePosition[posY]
+                        currentPoint.append(point)
+                        checkersSquarePosition.remove(point)
+
+                    # We search the most left point and put in the boardtab
+                    for i in range(0, len(currentPoint)):
+                        pos = self._getPointPositionMax(currentPoint, 0)
+                        point = currentPoint[pos]
+                        self._checkersSquarePosition[j][i*2+(j%2)] = point
+                        currentPoint[pos] = (0, 0, None)
+                
+                # We show the coord in the screen
+                imShow = self.captureScreen()
+                self.showBoardPoint(imShow)
+                self.showImage(imShow)
+                key = cv2.waitKey(1000)
+
+                tap = input("Do you want valid the board ? (y/N)")
+                if (tap == "y" or tap == "Y"):
+                    boardValid = True
+                
+                # Save configuration
+                self._areaSelected.save(self._pathSave + self._roiName)
+
+                f = open(self._pathSave + self._squarePositionName, "wb")
+                pickle.dump(self._checkersSquarePosition, f)
+                f.close()
+
+                print("Image Processing configuration saved !")
     
     def _getPointPositionMax(self, points, coord = 0):
         '''
@@ -505,7 +552,8 @@ if __name__ == "__main__":
 
     key = -1
 
-    '''while key != 113:
+    
+    while key != 113:
         imShow = cam.captureScreen()
         key = cv2.waitKey(10)
         pawnMaskBlue = cam._getMaskBluePawns(imShow)
