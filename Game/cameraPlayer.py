@@ -1,7 +1,7 @@
 import imageProcessing as imp
 import board as bd
 import player as pl
-
+import time
 class CameraPlayer:
     '''
     Real player capture by camera
@@ -134,6 +134,15 @@ class CameraPlayer:
                 if (nbMovement != 1):
                     self._movement = []
         
+        if ((pawn == bd.Pawns.BLUE or pawn == bd.Pawns.RED) and self._movement[len(self._movement)-1][1] == 0):
+            msg = "Wait for putting a King |----------|"
+            print(msg,end='')
+            for i in range(10):
+                time.sleep(1)
+                msg = msg.replace('-', 'x', 1)
+                print("\r", end='')
+            print(msg, end='')
+            
         print("Pawn played: " + str(pawn))
 
         return pawn
