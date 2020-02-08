@@ -149,7 +149,8 @@ class CameraPlayer:
                 time.sleep(1)
                 msg = msg.replace('-', 'x', 1)
                 print("\r", end='')
-            print(msg, end='')
+                print(msg, end='')
+            print("")
         
         image = self._camera.captureScreen()
         self._drawMovement(image, self._movement)
