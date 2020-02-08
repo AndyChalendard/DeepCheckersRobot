@@ -193,7 +193,7 @@ if __name__ == "__main__":
                 graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin)
 
         if (learn):
-            if (party%250 == 0):
+            if (party%25 == 0):
                 pawnSelectorModel.saveModel()
                 kingMovementModel.saveModel()
                 simplePawnMovementModel.saveModel()

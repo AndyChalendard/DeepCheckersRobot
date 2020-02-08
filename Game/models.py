@@ -11,6 +11,7 @@ if (str(tensorflow.__version__) == "1.8.0"): # Use for GPU training (with tensor
     from keras.layers import MaxPooling2D
     from keras.models import Sequential
     from keras.optimizers import Adam
+    from keras.models import model_from_json
 else: # Classic use
     import tensorflow.keras as tk
     from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
@@ -18,6 +19,7 @@ else: # Classic use
     from tensorflow.keras.layers import MaxPooling2D
     from tensorflow.keras.models import Sequential
     from tensorflow.keras.optimizers import Adam
+    from tensorflow.keras.models import model_from_json
 
 
 class Mod:
@@ -40,27 +42,33 @@ class CheckersModel :
         else:
             _nomModel = 'simple_pawn_movement'
 
-        self._pathModel = '../ModelsWeights/'
+        self._pathModel = '../Models/'
         if (os.path.exists(self._pathModel) == False):
             os.mkdir(self._pathModel)
-
+        
         self._pathModel += _nomModel
 
-        self._model = Sequential()
-        inputShape = (1, sizeY, sizeX//2)
-        numOutput = sizeX//2 * sizeY
+        if (os.path.exists(self._pathModel+'.h5') and  os.path.exists(self._pathModel+'.json')):
+            # Load the model
+            json_file = open(self._pathModel+'.json', 'r')
+            loaded_model_json = json_file.read()
+            json_file.close()
+            self._model = model_from_json(loaded_model_json)
+            # Load the weights
+            self._model.load_weights(self._pathModel+'.h5')
+        else:
+            self._model = Sequential()
+            inputShape = (1, sizeY, sizeX//2)
+            numOutput = sizeX//2 * sizeY
 
-        self._model.add(Conv2D(128, kernel_size=(6,3), strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
-        self._model.add(Conv2D(64, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv2'))
-        self._model.add(Conv2D(16, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv3'))
-        self._model.add(Flatten(name='Flatten'))
-        self._model.add(Dense(128, activation='relu',name='Dense1'))
-        self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
+            self._model.add(Conv2D(128, kernel_size=(6,3), strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
+            self._model.add(Conv2D(64, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv2'))
+            self._model.add(Conv2D(16, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv3'))
+            self._model.add(Flatten(name='Flatten'))
+            self._model.add(Dense(128, activation='relu',name='Dense1'))
+            self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
         adam = Adam(lr=self._learningRate)
         self._model.compile(loss=tk.losses.categorical_crossentropy,optimizer=adam,metrics=['acc'])
-
-        if os.path.exists(self._pathModel): # we load the weights if they exist
-            self._model.load_weights(self._pathModel)
 
         self._model.summary()
 
@@ -74,7 +82,14 @@ class CheckersModel :
         '''
         Save the model to a futur use
         '''
-        self._model.save_weights(self._pathModel)
+        # Save of the model
+        model_json = self._model.to_json()
+        with open(self._pathModel+'.json', "w") as json_file:
+            json_file.write(model_json)
+
+        # Save of the weights
+        self._model.save_weights(self._pathModel+'.h5')
+
 
     def trainModel(self, xTrain, yTrain, batchSize = 1, numEpoch = 3):
         '''
@@ -179,6 +194,12 @@ class IA :
 
         indiceAction = (action[0]//2) * (self._prevBoard.SIZE_X//2) + action[1]
         prevQ[0][indiceAction] += self._alpha * ( (reward + self._gamma * maxNewQ) - prevQ[0][indiceAction])
+        
+        # get prevQ Normalized
+        prevQSum = np.sum(prevQ)
+        if (prevQSum != 0):
+            prevQ = prevQ / prevQSum
+
         modelToLearn.trainModel(self._prevPrevBoard.getBoard(),prevQ)
 
     def learn(self, reward, currentBoard = None):
