@@ -1,5 +1,5 @@
 import numpy as np
-
+import random
 class SquareNotValid(Exception):
     pass
 class PawnsException(Exception):
@@ -48,6 +48,41 @@ class Board:
         bd._board = self._board * (-1)
         return bd
 
+    def randomBoard(self,nbPawnsMax,epsilon=0.02):
+        '''
+        Create a random board 
+        '''
+        self.resetEmpty()
+        i=0
+        while (i<nbPawnsMax):
+            x = random.randint(0,self.SIZE_X-1)
+            y = random.randint(0,self.SIZE_Y-1)
+            randomKing = random.random()
+            try :
+                if (self.getSquare(x,y) == Pawns.NULL):
+                    if (i%2 == 0):
+                        if (randomKing<epsilon):
+                            pawn = Pawns.BLUE_KING
+                        else:
+                            pawn = Pawns.BLUE
+                        blue = True
+                    else:
+                        if (randomKing<epsilon):
+                            pawn = Pawns.RED_KING
+                        else:
+                            pawn = Pawns.RED
+                        red = True
+                    self.setSquare(x,y,pawn)
+                i+=1
+            except SquareNotValid:
+                pass
+        if(red == False or blue == False):
+            x = random.randint(0,self.SIZE_X-1)
+            y = random.randint(0,self.SIZE_Y-1)
+            if (red == False):
+                self.setSquare(x,y,Pawns.RED)
+            elif (blue == False):
+                self.setSquare(x,y,Pawns.BLUE)
 
     def getBoard(self):
         '''
@@ -133,6 +168,7 @@ class Board:
 
 if __name__ == "__main__": #tests
     b=Board()
+    '''
     b.display()
     print(b._board)
     print(b._convertXYtoIJ(6,0))
@@ -142,4 +178,6 @@ if __name__ == "__main__": #tests
     except SquareNotValid as identifier:
         print (identifier)
     b.setSquare(0,2,3)
+    '''
+    b.randomBoard(10)
     b.display()

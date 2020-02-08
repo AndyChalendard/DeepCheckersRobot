@@ -96,7 +96,6 @@ class CheckersModel :
         Train the model, return the history of the epoch
         '''
         xTrain = np.array([[xTrain]], dtype=np.float32)
-        #yTrain = np.array([[yTrain]], dtype=np.float64)
         history = self._model.fit(xTrain, yTrain, batch_size=batchSize, epochs=numEpoch, verbose=0)
         return history
 
@@ -112,7 +111,7 @@ class CheckersModel :
 
 class IA :
 
-    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, epsilon=0.1, alpha=0.1, gamma=0.9, ):
+    def __init__ (self, sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnModel, learn, epsilon=0.1, alpha=0.1, gamma=0.9 ):
         '''
         Epsilon: chance of random exploration (epsilon greedy algorithm)
         Alpha: discount factor for futur action (for the qfunction)
@@ -122,6 +121,7 @@ class IA :
         self._alpha = alpha
         self._gamma = gamma
 
+        self._learn = learn
         self._prevBoard = None
         self._prevPrevBoard = None
         self._prevAvailablePawn = None
@@ -167,22 +167,38 @@ class IA :
         self._prevPrevXPawnWanted = self._prevXPawnWanted
         self._prevPrevYPawnWanted = self._prevYPawnWanted
         if (random.random() < self._epsilon):
-            self._prevXPawnWanted, self._prevYPawnWanted = random.choice(availablePawn) #exploration
+            if (self._learn == True):
+                self._prevXPawnWanted, self._prevYPawnWanted = random.choice(availablePawn) #exploration
+            else:
+                output = self._pawnSelectorModel.predictModel(board.getBoard()) #use the model
+                self._prevXPawnWanted, self._prevYPawnWanted = self._searchMax(board, output,availablePawn,nbMax = 2)
         else: #exploitation
             output = self._pawnSelectorModel.predictModel(board.getBoard()) #use the model
-            max = -1
-            self._prevXPawnWanted = -1
-            self._prevYPawnWanted = -1
-            for pawn in availablePawn:
-                xPawn = pawn[0]//2
-                yPawn = pawn[1]
-                index = xPawn*(board.SIZE_X//2) + yPawn
-                if (max < output[0][index]):
-                    max = output[0][index]
-                    self._prevXPawnWanted = pawn[0]
-                    self._prevYPawnWanted = pawn[1]
-
+            self._prevXPawnWanted, self._prevYPawnWanted = self._searchMax(board, output,availablePawn)
         return self._prevXPawnWanted, self._prevYPawnWanted
+
+    def _searchMax(self, board, output, availableList, nbMax=1):
+        '''
+        Search the Max of a list and return (x,y) with the probability max
+        nbMax = 1 : return the max
+        nbMax = 2 : return the second Max
+        '''
+        max = -1
+        prevX = -1
+        prevY = -1
+        for elt in availableList:
+            x = elt[0]//2
+            y = elt[1]
+            index = x*(board.SIZE_X//2) + y
+            if (max < output[0][index]):
+                max = output[0][index]
+                prevX = elt[0]
+                prevY = elt[1]
+        if (nbMax >= 2):
+            index = (prevX//2)*(board.SIZE_X//2) + prevY
+            output[0][index] = -1
+            prevX, prevY = self._searchMax(board, output, availableList, nbMax-1)
+        return prevX, prevY
 
     def _learnModel(self, modelToLearn, action, reward):
         '''
@@ -244,23 +260,18 @@ class IA :
         self._prevPrevYMouvementWanted = self._prevYMouvementWanted
         self._prevPrevBoard = self._prevBoard
         self._prevBoard = board.copy()
-        if (random.random() < self._epsilon):
-            self._prevXMouvementWanted, self._prevYMouvementWanted = random.choice(finalMovement) #exploration
-        else: #exploitation
-            if (board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED_KING):
-                output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
-            elif(board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED):
-                output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
-            max = -1
-            self._prevXMouvementWanted = -1
-            self._prevYMouvementWanted = -1
-            for mov in finalMovement:
-                xMov = mov[0]//2
-                yMov = mov[1]
-                index = xMov*4 + yMov
-                if (max < output[0][index]):
-                    max = output[0][index]
-                    self._prevXMouvementWanted = mov[0]
-                    self._prevYMouvementWanted = mov[1]
 
+        if (board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED_KING):
+                output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
+        elif(board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED):
+            output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
+        if (random.random() < self._epsilon):
+            if (self._learn == True):
+                self._prevXMouvementWanted, self._prevYMouvementWanted = random.choice(finalMovement) #exploration
+            else : 
+                self._prevXMouvementWanted, self._prevYMouvementWanted = self._searchMax(board, output,finalMovement,2)
+        else: #exploitation
+            self._prevXMouvementWanted, self._prevYMouvementWanted = self._searchMax(board, output,finalMovement)
+        print (output)
+        print(self._prevXMouvementWanted//2*(board.SIZE_X//2)+ self._prevYMouvementWanted)
         return self._prevXMouvementWanted, self._prevYMouvementWanted

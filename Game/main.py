@@ -19,12 +19,6 @@ def graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gam
 
 
 if __name__ == "__main__":
-    game = ga.Game()
-
-    sizeX = game.getBoard(pl.Player.BLUE).SIZE_X
-    sizeY = game.getBoard(pl.Player.BLUE).SIZE_Y
-
-    
     NB_GAMES_AVERAGE = 50
 
     print("___________________________________")
@@ -44,7 +38,7 @@ if __name__ == "__main__":
     nbGamesMax = int(input(">"))
 
     gameRobot = None
-    if (playerRedType == pl.PlayerType.RANDOM or playerRedType == pl.PlayerType.IA):
+    if ((playerRedType == pl.PlayerType.RANDOM or playerRedType == pl.PlayerType.IA) and playerBlueType == pl.PlayerType.CAMERA):
         print("___________________________________")
         print("Do you want to play with the robot ? (y/N)")
         response = input(">")
@@ -59,7 +53,6 @@ if __name__ == "__main__":
         response = input(">")
         if (response == "y" or response == "Y"):
             learn = True
-
 
     showGraph = False
     if (playerRedType == pl.PlayerType.IA and playerBlueType == pl.PlayerType.RANDOM):
@@ -82,6 +75,14 @@ if __name__ == "__main__":
         axs[0, 1].set_title('Games win/nbGames')
         axs[1, 0].set_title('Games win-loses')
         axs[1, 1].set_title('Games win')
+    if(learn == True and playerRedType == pl.PlayerType.IA and playerBlueType == pl.PlayerType.IA):
+        randomBoard = True
+    else:
+        randomBoard = False
+
+    game = ga.Game(random = randomBoard)
+    sizeX = game.getBoard(pl.Player.BLUE).SIZE_X
+    sizeY = game.getBoard(pl.Player.BLUE).SIZE_Y
 
     pawnSelectorModel = None
     kingMovementModel = None
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         kingMovementModel = mod.CheckersModel(mod.Mod.KING_MOVEMENT, sizeX,sizeY)
         simplePawnMovementModel = mod.CheckersModel(mod.Mod.SIMPLE_PAWN_MOVEMENT, sizeX,sizeY)
 
-    players = [pl.Player(pl.Player.RED,playerRedType,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel),pl.Player(pl.Player.BLUE, playerBlueType,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel)]
+    players = [pl.Player(pl.Player.RED,playerRedType,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel, learn),pl.Player(pl.Player.BLUE, playerBlueType,sizeX, sizeY, pawnSelectorModel, kingMovementModel, simplePawnMovementModel, learn)]
     party = 0
 
     redWins = 0
@@ -198,8 +199,8 @@ if __name__ == "__main__":
                 kingMovementModel.saveModel()
                 simplePawnMovementModel.saveModel()
                 print("Models Saved !")
-
         game.reset()
+        game._board.display() 
         players[0].reset()
         players[1].reset()
 
