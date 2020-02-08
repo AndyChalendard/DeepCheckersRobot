@@ -21,38 +21,58 @@ def graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gam
 if __name__ == "__main__":
     NB_GAMES_AVERAGE = 50
 
+    classicConfig = True
     print("___________________________________")
-    print("Type of player:")
-    print(pl.PlayerType.HUMAN_TERMINAL, ") Terminal")
-    print(pl.PlayerType.IA, ") AI")
-    print(pl.PlayerType.RANDOM, ") Random")
-    print(pl.PlayerType.CAMERA, ") Camera")
-    print("")
-    playerRedType = pl.PlayerType.CAMERA
-    while (playerRedType == pl.PlayerType.CAMERA):
-        playerRedType = int(input("Type of player red (No camera): "))
-    playerBlueType = int(input("Type of player blue (No robot): "))
+    print("Do you want to play with the classic configuration? (Y/n)")
+    response = input(">")
+    if (response == "N" or response == "n"):
+        classicConfig = False
+    
+    if (classicConfig == True):
+        learn = False
+
+        playerRedType = pl.PlayerType.IA
+        playerBlueType = pl.PlayerType.CAMERA
+
+        import robotCom as rc
+        gameRobot = rc.GameRobot()
+
+    else:
+        print("___________________________________")
+        print("Type of player:")
+        print(pl.PlayerType.HUMAN_TERMINAL, ") Terminal")
+        print(pl.PlayerType.IA, ") AI")
+        print(pl.PlayerType.RANDOM, ") Random")
+        print(pl.PlayerType.CAMERA, ") Camera")
+        print("")
+        playerRedType = pl.PlayerType.CAMERA
+        while (playerRedType == pl.PlayerType.CAMERA):
+            playerRedType = int(input("Type of player red (No camera): "))
+        playerBlueType = int(input("Type of player blue (No robot): "))
+
+        gameRobot = None
+        if ((playerRedType == pl.PlayerType.RANDOM or playerRedType == pl.PlayerType.IA) and playerBlueType == pl.PlayerType.CAMERA):
+            print("___________________________________")
+            print("Do you want to play with the robot ? (y/N)")
+            response = input(">")
+            if (response == "y" or response == "Y"):
+                import robotCom as rc
+                gameRobot = rc.GameRobot()
+        
+        learn = False
+        if (playerRedType == pl.PlayerType.IA or playerBlueType == pl.PlayerType.IA):
+            print("___________________________________")
+            print("AI must learn during these games ? (y/N)")
+            response = input(">")
+            if (response == "y" or response == "Y"):
+                learn = True
 
     print("___________________________________")
     print("Number of game wanted")
-    nbGamesMax = int(input(">"))
-
-    gameRobot = None
-    if ((playerRedType == pl.PlayerType.RANDOM or playerRedType == pl.PlayerType.IA) and playerBlueType == pl.PlayerType.CAMERA):
-        print("___________________________________")
-        print("Do you want to play with the robot ? (y/N)")
-        response = input(">")
-        if (response == "y" or response == "Y"):
-            import robotCom as rc
-            gameRobot = rc.GameRobot()
-
-    learn = False
-    if (playerRedType == pl.PlayerType.IA or playerBlueType == pl.PlayerType.IA):
-        print("___________________________________")
-        print("AI must learn during these games ? (y/N)")
-        response = input(">")
-        if (response == "y" or response == "Y"):
-            learn = True
+    try:
+        nbGamesMax = int(input(">"))
+    except ValueError :
+        nbGamesMax = 1
 
     showGraph = False
     if (playerRedType == pl.PlayerType.IA and playerBlueType == pl.PlayerType.RANDOM):
