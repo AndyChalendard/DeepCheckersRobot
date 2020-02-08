@@ -4,9 +4,10 @@ import numpy as np
 
 
 class Game:
-    def __init__(self,random=False):
+    def __init__(self,random=False, nbMaxPawnRandom=None):
         self._board = bd.Board()
         self._randomBoard = random
+        self._nbMaxPawnRandom = nbMaxPawnRandom
         self.reset()
 
     def getBoard(self, color):
@@ -60,7 +61,7 @@ class Game:
         if (self._randomBoard == False):
             self._board.reset()
         else:
-            self._board.randomBoard(20)
+            self._board.randomBoard(self._nbMaxPawnRandom)
 
     def setMovement(self,pawn,playerColor,movementValid):
         '''

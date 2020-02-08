@@ -183,10 +183,10 @@ class IA :
         nbMax = 1 : return the max
         nbMax = 2 : return the second Max
         '''
-        max = -1
-        prevX = -1
-        prevY = -1
-        for elt in availableList:
+        max = output[0][0]
+        prevX = availableList[0][0]
+        prevY = availableList[0][1]
+        for elt in availableList[1:]:
             x = elt[0]//2
             y = elt[1]
             index = x*(board.SIZE_X//2) + y
@@ -272,6 +272,4 @@ class IA :
                 self._prevXMouvementWanted, self._prevYMouvementWanted = self._searchMax(board, output,finalMovement,2)
         else: #exploitation
             self._prevXMouvementWanted, self._prevYMouvementWanted = self._searchMax(board, output,finalMovement)
-        print (output)
-        print(self._prevXMouvementWanted//2*(board.SIZE_X//2)+ self._prevYMouvementWanted)
         return self._prevXMouvementWanted, self._prevYMouvementWanted

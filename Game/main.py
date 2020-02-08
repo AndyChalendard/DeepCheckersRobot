@@ -80,7 +80,7 @@ if __name__ == "__main__":
     else:
         randomBoard = False
 
-    game = ga.Game(random = randomBoard)
+    game = ga.Game(random = randomBoard,nbMaxPawnRandom=30)
     sizeX = game.getBoard(pl.Player.BLUE).SIZE_X
     sizeY = game.getBoard(pl.Player.BLUE).SIZE_Y
 
@@ -194,13 +194,12 @@ if __name__ == "__main__":
                 graphShow(axs, gamesWinRatioLastXGames, gamesWinRatio, gamesWinLoseDiff, gamesWin)
 
         if (learn):
-            if (party%25 == 0):
+            if (party%250 == 0):
                 pawnSelectorModel.saveModel()
                 kingMovementModel.saveModel()
                 simplePawnMovementModel.saveModel()
                 print("Models Saved !")
         game.reset()
-        game._board.display() 
         players[0].reset()
         players[1].reset()
 
