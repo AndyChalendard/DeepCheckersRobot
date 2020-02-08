@@ -360,7 +360,7 @@ class RobotCheckers :
         '''
         for square in squares:
             x,y=self._convertSquareToMovement(square,board)
-            self._robot.setPosition(x,y,self.Z_JUMP,x,y,self.Z_NAVIGATION)
+            self._robot.setPosition(x,y,self.Z_JUMP)
             self._robot.setPosition(x,y,self.Z_NAVIGATION)
 
 
