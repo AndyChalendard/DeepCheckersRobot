@@ -447,10 +447,39 @@ class Camera:
                         centerPoint.append((cX, cY))
         return centerPoint
 
+    def drawLineBetweenToPawns(self, im, x1, y1, x2, y2, color=(0,255,0)):
+        image = im.getRgb()
+        case1 = self._checkersSquarePosition[y1][x1]
+        case2 = self._checkersSquarePosition[y2][x2]
+
+        cv2.line(image,(case1[0],case1[1]),(case2[0],case2[1]),color = color, thickness=4)
+
 if __name__ == "__main__":
 
     cam = Camera()
     
+    while True:
+        im = cam.captureScreen()
+
+        # TODO STEP : 1
+
+        # l'image a modifier: im.getRgb()
+        #cv2.line(im.getRgb(),0,0,15,15,color = (0,255,0), thickness=4)
+
+        # Tracer une ligne
+
+
+        # TODO STEP : 2
+
+        # Cree la fonction Drawline...
+        # Cordonnée en pixel du pion: case = self._checkersSquarePosition[squarePosition[1]][squarePosition[0]]
+        
+        #Tester la fonction drawline between
+
+        cam.drawLineBetweenToPawns(im,0,0,5,5)
+        cam.showImage(im, wait=True)
+
+    '''
     while True:
         im = cam.captureScreen()
         board = cam.getBoard(im)

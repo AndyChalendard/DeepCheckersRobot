@@ -89,6 +89,9 @@ class CameraPlayer:
                     pass
 
         return pawn
+    def _drawMovement(self, image, mvt):
+        for i in range (len(mvt)-1):
+            self._camera.drawLineBetweenToPawns(image,mvt[i][0],mvt[i][1],mvt[i+1][0],mvt[i+1][1])
 
     def getPawnWanted(self, board, availableMovements, playerColor):
         '''
@@ -114,8 +117,6 @@ class CameraPlayer:
             for mvt in availableMovements:
                 pawn = mvt[0]
                 self._camera.showPawn(image, pawn)
-            
-            self._camera.showImage(image, wait=True)
 
             pawn = self._getPawnPlayed(captureBoard, board, playerColor)
             if (pawn != None):
@@ -123,6 +124,10 @@ class CameraPlayer:
                 for mvt in availableMovements:
                     if (mvt[0] == pawn):
                         myMovements.append(mvt)
+
+                # Show the mouvement of the selected pawn
+                for mvt in myMovements:
+                    self._drawMovement(image, mvt)
 
                 nbMovement = 0
                 for mvt in myMovements:
@@ -134,7 +139,10 @@ class CameraPlayer:
                 if (nbMovement != 1):
                     self._movement = []
         
-        if ((pawn == bd.Pawns.BLUE or pawn == bd.Pawns.RED) and self._movement[len(self._movement)-1][1] == 0):
+            self._camera.showImage(image, wait=True)
+        
+        pawnType = board.getSquare(pawn[0], pawn[1])
+        if ((pawnType == bd.Pawns.BLUE or pawnType == bd.Pawns.RED) and self._movement[len(self._movement)-1][1] == 0):
             msg = "Wait for putting a King |----------|"
             print(msg,end='')
             for i in range(10):
@@ -142,7 +150,11 @@ class CameraPlayer:
                 msg = msg.replace('-', 'x', 1)
                 print("\r", end='')
             print(msg, end='')
-            
+        
+        image = self._camera.captureScreen()
+        self._drawMovement(image, self._movement)
+        self._camera.showImage(image, wait=True)
+
         print("Pawn played: " + str(pawn))
 
         return pawn
