@@ -6,20 +6,25 @@ import tensorflow
 
 if (str(tensorflow.__version__) == "1.8.0"): # Use for GPU training (with tensorflow 1.8)
     import keras as tk
-    from keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
+    from keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout, Add, BatchNormalization, Input
     from keras.layers import Conv2D
     from keras.layers import MaxPooling2D
-    from keras.models import Sequential
+    from keras.models import Sequential, Model
     from keras.optimizers import Adam
     from keras.models import model_from_json
+    from keras.regularizers import l2
+
+
 else: # Classic use
     import tensorflow.keras as tk
-    from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
+    from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout, Add, BatchNormalization, Input
     from tensorflow.keras.layers import Conv2D
     from tensorflow.keras.layers import MaxPooling2D
-    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.models import Sequential, Model
     from tensorflow.keras.optimizers import Adam
     from tensorflow.keras.models import model_from_json
+    from tensorflow.keras.regularizers import l2
+
 
 
 class Mod:
@@ -57,20 +62,48 @@ class CheckersModel :
             # Load the weights
             self._model.load_weights(self._pathModel+'.h5')
         else:
-            self._model = Sequential()
             inputShape = (1, sizeY, sizeX//2)
             numOutput = sizeX//2 * sizeY
 
-            self._model.add(Conv2D(128, kernel_size=(6,3), strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1'))
-            self._model.add(Conv2D(64, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv2'))
-            self._model.add(Conv2D(16, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv3'))
-            self._model.add(Flatten(name='Flatten'))
-            self._model.add(Dense(128, activation='relu',name='Dense1'))
-            self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
+            in_x = x = Input(inputShape)
+            # (batch, channels, height, width)
+            x = Conv2D(filters=256, kernel_size=5, padding="same",
+                    data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
+            x = BatchNormalization(axis=1)(x)
+            x = Activation("relu")(x)
+
+            for _ in range(3):
+                x = self._build_residual_block(x)
+
+            x = Conv2D(filters=2, kernel_size=1, data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
+            x = BatchNormalization(axis=1)(x)
+            x = Activation("relu")(x)
+            x = Flatten()(x)
+
+            x = Dense(numOutput, kernel_regularizer=l2(1e-4), activation="softmax")(x)
+
+            self._model = Model(in_x, x)
+
         adam = Adam(lr=self._learningRate)
         self._model.compile(loss=tk.losses.categorical_crossentropy,optimizer=adam,metrics=['acc'])
 
         self._model.summary()
+    
+    def _build_residual_block(self, x):
+        in_x = x
+        x = Conv2D(filters=256, kernel_size=5, padding="same",
+                    data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
+        x = BatchNormalization(axis=1)(x)
+        x = Activation("relu")(x)
+
+        x = Conv2D(filters=256, kernel_size=5, padding="same",
+                    data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
+        x = BatchNormalization(axis=1)(x)
+
+        x = Add()([in_x, x])
+        x = Activation("relu")(x)
+
+        return x
 
     def getModel(self):
         '''
