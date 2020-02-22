@@ -219,7 +219,7 @@ class IA :
         max = output[0][0]
         prevX = availableList[0][0]
         prevY = availableList[0][1]
-        for elt in availableList[1:]:
+        for elt in availableList:
             x = elt[0]//2
             y = elt[1]
             index = x*(board.SIZE_X//2) + y
@@ -295,7 +295,7 @@ class IA :
         self._prevBoard = board.copy()
 
         if (board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED_KING):
-                output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
+            output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
         elif(board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED):
             output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
         if (random.random() < self._epsilon):
