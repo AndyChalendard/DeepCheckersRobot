@@ -153,7 +153,6 @@ class Board:
             i = y #rows
         else:
             raise SquareNotValid("The case (" + str(x) +","+ str(y) + ") is not valid")
-            #raise Exception("toto")
         return(i,j)
 
     def reverseBoard(self):

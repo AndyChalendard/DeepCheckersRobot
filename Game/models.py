@@ -6,25 +6,20 @@ import tensorflow
 
 if (str(tensorflow.__version__) == "1.8.0"): # Use for GPU training (with tensorflow 1.8)
     import keras as tk
-    from keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout, Add, BatchNormalization, Input
+    from keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
     from keras.layers import Conv2D
     from keras.layers import MaxPooling2D
-    from keras.models import Sequential, Model
+    from keras.models import Sequential
     from keras.optimizers import Adam
     from keras.models import model_from_json
-    from keras.regularizers import l2
-
-
 else: # Classic use
     import tensorflow.keras as tk
-    from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout, Add, BatchNormalization, Input
+    from tensorflow.keras.layers import Input, Dense, Activation,Lambda,Flatten,Dropout
     from tensorflow.keras.layers import Conv2D
     from tensorflow.keras.layers import MaxPooling2D
-    from tensorflow.keras.models import Sequential, Model
+    from tensorflow.keras.models import Sequential
     from tensorflow.keras.optimizers import Adam
     from tensorflow.keras.models import model_from_json
-    from tensorflow.keras.regularizers import l2
-
 
 
 class Mod:
@@ -62,48 +57,20 @@ class CheckersModel :
             # Load the weights
             self._model.load_weights(self._pathModel+'.h5')
         else:
-            inputShape = (1, sizeY, sizeX//2)
+            self._model = Sequential()
+            inputShape = (sizeY, sizeY//2, 1)
             numOutput = sizeX//2 * sizeY
 
-            in_x = x = Input(inputShape)
-            # (batch, channels, height, width)
-            x = Conv2D(filters=256, kernel_size=5, padding="same",
-                    data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
-            x = BatchNormalization(axis=1)(x)
-            x = Activation("relu")(x)
-
-            for _ in range(3):
-                x = self._build_residual_block(x)
-
-            x = Conv2D(filters=2, kernel_size=1, data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
-            x = BatchNormalization(axis=1)(x)
-            x = Activation("relu")(x)
-            x = Flatten()(x)
-
-            x = Dense(numOutput, kernel_regularizer=l2(1e-4), activation="softmax")(x)
-
-            self._model = Model(in_x, x)
-
+            self._model.add(Conv2D(128, kernel_size=(6,3), strides = (1,1), padding='same', activation='relu',input_shape=inputShape,name='Conv1',data_format="channels_last"))
+            self._model.add(Conv2D(64, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv2'))
+            self._model.add(Conv2D(16, kernel_size=(4,2), strides = (1,1), padding='same', activation='relu',name='Conv3'))
+            self._model.add(Flatten(name='Flatten'))
+            self._model.add(Dense(128, activation='relu',name='Dense1'))
+            self._model.add(Dense(numOutput, activation='softmax',name='DenseOutput'))
         adam = Adam(lr=self._learningRate)
         self._model.compile(loss=tk.losses.categorical_crossentropy,optimizer=adam,metrics=['acc'])
 
         self._model.summary()
-    
-    def _build_residual_block(self, x):
-        in_x = x
-        x = Conv2D(filters=256, kernel_size=5, padding="same",
-                    data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
-        x = BatchNormalization(axis=1)(x)
-        x = Activation("relu")(x)
-
-        x = Conv2D(filters=256, kernel_size=5, padding="same",
-                    data_format="channels_first", use_bias=False, kernel_regularizer=l2(1e-4))(x)
-        x = BatchNormalization(axis=1)(x)
-
-        x = Add()([in_x, x])
-        x = Activation("relu")(x)
-
-        return x
 
     def getModel(self):
         '''
@@ -128,7 +95,8 @@ class CheckersModel :
         '''
         Train the model, return the history of the epoch
         '''
-        xTrain = np.array([[xTrain]], dtype=np.float32)
+        xTrain = np.array([xTrain], dtype=np.float32)
+        xTrain=xTrain.reshape(1,8,4,1)
         history = self._model.fit(xTrain, yTrain, batch_size=batchSize, epochs=numEpoch, verbose=0)
         return history
 
@@ -138,7 +106,8 @@ class CheckersModel :
         x: board
         y: flatten board
         '''
-        x = np.array([[x]], dtype=np.float32)
+        x = np.array([x], dtype=np.float32)
+        x=x.reshape(1,8,4,1)
         y = self._model.predict(x)
         return y
 
@@ -219,16 +188,16 @@ class IA :
         max = output[0][0]
         prevX = availableList[0][0]
         prevY = availableList[0][1]
-        for elt in availableList:
+        for elt in availableList[1:]:
             x = elt[0]//2
             y = elt[1]
-            index = x*(board.SIZE_X//2) + y
+            index = y*(board.SIZE_X//2) + x
             if (max < output[0][index]):
                 max = output[0][index]
                 prevX = elt[0]
                 prevY = elt[1]
         if (nbMax >= 2):
-            index = (prevX//2)*(board.SIZE_X//2) + prevY
+            index = prevY*(board.SIZE_X//2) + (prevX//2)
             output[0][index] = -1
             prevX, prevY = self._searchMax(board, output, availableList, nbMax-1)
         return prevX, prevY
@@ -241,7 +210,7 @@ class IA :
         newQ = modelToLearn.predictModel(self._prevBoard.getBoard())
         maxNewQ = max(newQ[0])
 
-        indiceAction = (action[0]//2) * (self._prevBoard.SIZE_X//2) + action[1]
+        indiceAction = action[1] * (self._prevBoard.SIZE_X//2) + (action[0]//2)
         prevQ[0][indiceAction] += self._alpha * ( (reward + self._gamma * maxNewQ) - prevQ[0][indiceAction])
         
         # get prevQ Normalized
@@ -295,7 +264,7 @@ class IA :
         self._prevBoard = board.copy()
 
         if (board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED_KING):
-            output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
+                output = self._kingMovementModel.predictModel(board.getBoard()) #use kingMovement model
         elif(board.getSquare(self._prevXPawnWanted,self._prevYPawnWanted) == bd.Pawns.RED):
             output = self._simplePawnMovementModel.predictModel(board.getBoard()) #use simplePawnMovement model
         if (random.random() < self._epsilon):
